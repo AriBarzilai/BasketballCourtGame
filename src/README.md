@@ -48,7 +48,7 @@ This exercise will have you implement a basketball court scene with interactive 
   
 - Examine the `createBasketballCourt()` function and build upon it
 - Use the `degrees_to_radians()` helper function for any rotation calculations
-- Add all your code to the hw5.js file
+- Add all your code to the scene.js file
 
 ## Reference
 - Standard basketball court dimensions are ~28m x 15m (92ft x 50ft)
