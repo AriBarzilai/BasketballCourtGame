@@ -7,7 +7,7 @@ function BasketballCourt() {
     const courtGeometry = new THREE.BoxGeometry(94, 0.2, 50);
     const { width, height } = courtGeometry.parameters;
     const courtMaterial = new THREE.MeshPhongMaterial({
-        color: 0xc68642,  // Brown wood color
+        color: utils.COLORS.BROWN,  // Brown wood color
         shininess: 50
     });
     const court = new THREE.Mesh(courtGeometry, courtMaterial);
@@ -18,6 +18,7 @@ function BasketballCourt() {
     court.add(utils.Ring(-28, height / 2 + utils.LAYER_OFFSET, 0, 6)) // left ring
     court.add(utils.Rectangle(37.5, height / 2 + utils.LAYER_OFFSET, 0, 19, 12)) // right inner rectangle
     court.add(utils.Rectangle(-37.5, height / 2 + utils.LAYER_OFFSET, 0, 19, 12)) // left inner rectangle
+
     return court
 }
 
