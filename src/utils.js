@@ -1,12 +1,13 @@
 ///////////////////////
 // CONSTANTS
 ///////////////////////
-export const LAYER_OFFSET = 0.01
+export const LAYER_OFFSET = 0.15
 const LINE_WIDTH = 0.5
 export const COLORS = {
     BLACK: 0x000000
     , WHITE: 0xffffff
     , BROWN: 0xc68642
+    , GREEN: 0x008348
 }
 ///////////////////////
 // MATH HELPERS
