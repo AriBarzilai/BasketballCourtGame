@@ -1,4 +1,5 @@
 import * as utils from './utils.js'
+import * as gui from './Gui.js'
 import { OrbitControls } from './OrbitControls.js'
 import { BasketballCourt } from './Scene/BasketBallCourt.js'
 import { Basketball } from './Scene/Basketball.js';
@@ -38,24 +39,23 @@ const controls = new OrbitControls(camera, renderer.domElement);
 let isOrbitEnabled = true;
 
 // Instructions display
-const instructionsElement = document.createElement('div');
-instructionsElement.style.position = 'absolute';
-instructionsElement.style.bottom = '20px';
-instructionsElement.style.left = '20px';
-instructionsElement.style.color = 'white';
-instructionsElement.style.fontSize = '16px';
-instructionsElement.style.fontFamily = 'Arial, sans-serif';
-instructionsElement.style.textAlign = 'left';
-instructionsElement.innerHTML = `
-  <h3>Controls:</h3>
-  <p>O - Toggle orbit camera</p>
-`;
+let instructionsElement = gui.createControlsText(document);
 document.body.appendChild(instructionsElement);
 
 // Handle key events
 function handleKeyDown(e) {
+  if (e.key === "h") {
+    if (instructionsElement) {
+      instructionsElement.remove()
+      instructionsElement = null;
+    } else {
+      instructionsElement = gui.createControlsText(document);
+      document.body.appendChild(instructionsElement);
+    }
+  }
   if (e.key === "o") {
     isOrbitEnabled = !isOrbitEnabled;
+    gui.updateInstructions(instructionsElement, isOrbitEnabled)
   }
 }
 
@@ -69,6 +69,7 @@ function update() {
 
 // Animation function
 function draw() {
+  update();
   requestAnimationFrame(draw);
   renderer.render(scene, camera);
 }
