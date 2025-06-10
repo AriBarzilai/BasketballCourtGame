@@ -18,7 +18,7 @@ function BasketballCourt() {
     court.add(utils.Ring(-28, height / 2 + utils.LAYER_OFFSET, 0, 6)) // left ring
     court.add(utils.Rectangle(37.5, height / 2 + utils.LAYER_OFFSET, 0, 19, 12)) // right inner rectangle
     court.add(utils.Rectangle(-37.5, height / 2 + utils.LAYER_OFFSET, 0, 19, 12)) // left inner rectangle
-
+    court.add(utils.Line(0, height / 2 + utils.LAYER_OFFSET, 25, 0, height / 2 + utils.LAYER_OFFSET, -25))
     return court
 }
 

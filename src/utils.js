@@ -66,27 +66,35 @@ function Rectangle(x_offset, y_offset, z_offset, W = 30, D = 15) {
     return mesh;
 }
 
-export function Line(
-    x1_offset, y1_offset, z1_offset,
-    x2_offset, y2_offset, z2_offset
-) {
-    const p1 = new THREE.Vector3(
-        x1_offset,
-        y1_offset,
-        z1_offset + LAYER_OFFSET
-    );
-    const p2 = new THREE.Vector3(
-        x2_offset,
-        y2_offset,
-        z2_offset + LAYER_OFFSET
-    );
-    const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-    const material = new THREE.LineBasicMaterial({
+function Line(x1, y1, z1, x2, y2, z2) {
+    // 1.  compute start/end vectors and the segment length
+    const start = new THREE.Vector3(x1, y1, z1);
+    const end = new THREE.Vector3(x2, y2, z2);
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const length = direction.length();
+
+    // 2.  build a flat plane of size [ length × LINE_WIDTH ]
+    const geometry = new THREE.PlaneGeometry(length, LINE_WIDTH);
+    // lie it flat (plane is XY by default → XZ)
+    geometry.rotateX(-Math.PI / 2);
+
+    // 3.  rotate around Y so its long edge points from start→end
+    const angle = Math.atan2(z2 - z1, x2 - x1);
+    geometry.rotateY(angle);
+
+    // 4.  create the mesh
+    const material = new THREE.MeshBasicMaterial({
         color: COLORS.WHITE,
-        linewidth: LINE_WIDTH
+        side: THREE.DoubleSide
     });
-    const line = new THREE.Line(geometry, material);
-    return line;
+    const mesh = new THREE.Mesh(geometry, material);
+
+    // 5.  move it into place (centered between start & end)
+    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    mesh.position.copy(midpoint);
+
+    mesh.receiveShadow = true;
+    return mesh;
 }
 
-export { Rectangle, Ring }
+export { Rectangle, Ring, Line }
