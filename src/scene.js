@@ -1,6 +1,7 @@
+import * as utils from './utils.js'
 import { OrbitControls } from './OrbitControls.js'
 import { BasketballCourt } from './Scene/BasketBallCourt.js'
-import * as utils from './utils.js'
+import { Basketball } from './Scene/Basketball.js';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -25,6 +26,7 @@ directionalLight.castShadow = true;
 
 // Create all elements
 scene.add(BasketballCourt());
+scene.add(Basketball());
 
 // Set camera position for better view
 const cameraTranslate = new THREE.Matrix4();
