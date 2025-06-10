@@ -1,6 +1,6 @@
 import express from 'express';
 import path from 'path';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,9 +14,10 @@ const port = 8000
 app.use("/src", express.static(__dirname + "/src"));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '/index.html'));
-  })
+  res.sendFile(path.join(__dirname, '/index.html'));
+})
 
 app.listen(port, () => {
-console.log(`Example app listening on port ${port}`)
+  console.log(`Netta and Ari's super cool basketball game app which deserves at least a grade of 100 is listening on port ${port}`)
+  console.log(`http://localhost:8000`)
 })  

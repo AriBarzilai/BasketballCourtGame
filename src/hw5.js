@@ -1,4 +1,4 @@
-import {OrbitControls} from './OrbitControls.js'
+import { OrbitControls } from './OrbitControls.js'
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -23,23 +23,19 @@ directionalLight.castShadow = true;
 
 function degrees_to_radians(degrees) {
   var pi = Math.PI;
-  return degrees * (pi/180);
+  return degrees * (pi / 180);
 }
 
 // Create basketball court
 function createBasketballCourt() {
-  // Court floor - just a simple brown surface
   const courtGeometry = new THREE.BoxGeometry(30, 0.2, 15);
-  const courtMaterial = new THREE.MeshPhongMaterial({ 
+  const courtMaterial = new THREE.MeshPhongMaterial({
     color: 0xc68642,  // Brown wood color
     shininess: 50
   });
   const court = new THREE.Mesh(courtGeometry, courtMaterial);
   court.receiveShadow = true;
   scene.add(court);
-  
-  // Note: All court lines, hoops, and other elements have been removed
-  // Students will need to implement these features
 }
 
 // Create all elements
@@ -81,11 +77,11 @@ document.addEventListener('keydown', handleKeyDown);
 // Animation function
 function animate() {
   requestAnimationFrame(animate);
-  
+
   // Update controls
   controls.enabled = isOrbitEnabled;
   controls.update();
-  
+
   renderer.render(scene, camera);
 }
 
