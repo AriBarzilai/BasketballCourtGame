@@ -1,7 +1,7 @@
 ///////////////////////
 // CONSTANTS
 ///////////////////////
-export const LAYER_OFFSET = 0.005
+export const LAYER_OFFSET = 0.01
 const LINE_WIDTH = 0.5
 
 export const COLORS = {
