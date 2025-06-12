@@ -18,7 +18,6 @@ function Basketball() {
     });
 
     const basketball = new THREE.Mesh(ballGeometry, ballMaterial);
-    basketball.position.set(0, 0, 0);
     basketball.castShadow = true;
     basketball.receiveShadow = true;
 
