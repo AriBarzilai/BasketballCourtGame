@@ -3,11 +3,21 @@
 ///////////////////////
 export const LAYER_OFFSET = 0.005
 const LINE_WIDTH = 0.5
+
 export const COLORS = {
     BLACK: 0x000000
     , WHITE: 0xffffff
     , BROWN: 0xc68642
     , GREEN: 0x008348
+}
+
+export const MATERIALS = {
+    COURT_LINES: new THREE.MeshPhongMaterial({
+        color: COLORS.WHITE,
+        shininess: 60,
+        specular: 0xaaaaaa,
+        side: THREE.DoubleSide
+    })
 }
 ///////////////////////
 // MATH HELPERS
@@ -27,7 +37,8 @@ function getLayerHeight(height, layerNum = 0) {
 function Ring(x_offset, y_offset, z_offset, radius) {
     const geometry = new THREE.RingGeometry(radius - LINE_WIDTH / 2, radius + LINE_WIDTH / 2, 32);
     geometry.rotateX(-Math.PI / 2)
-    const material = new THREE.MeshBasicMaterial({ color: COLORS.WHITE });
+    // Use Phong material for white so it can have shadows/specular
+    const material = MATERIALS.COURT_LINES
     const circle = new THREE.Mesh(geometry, material);
     circle.position.set(x_offset, y_offset, z_offset);
     return circle
@@ -65,7 +76,8 @@ function Rectangle(x_offset, y_offset, z_offset, W = 30, D = 15) {
     geo2D.rotateX(-Math.PI / 2);
 
     // Create a visible mesh from the geometry
-    const material = new THREE.MeshBasicMaterial({ color: COLORS.WHITE, side: THREE.DoubleSide });
+    // Use Phong material for white so it can have shadows/specular
+    const material = MATERIALS.COURT_LINES
     const mesh = new THREE.Mesh(geo2D, material);
     mesh.position.set(x_offset, y_offset, z_offset);
     mesh.receiveShadow = true;
@@ -89,10 +101,7 @@ function Line(x1, y1, z1, x2, y2, z2) {
     geometry.rotateY(angle);
 
     // 4.  create the mesh
-    const material = new THREE.MeshBasicMaterial({
-        color: COLORS.WHITE,
-        side: THREE.DoubleSide
-    });
+    const material = MATERIALS.COURT_LINES
     const mesh = new THREE.Mesh(geometry, material);
 
     // 5.  move it into place (centered between start & end)
@@ -212,10 +221,7 @@ function Arc(
     );
     geometry.computeVertexNormals();
 
-    const material = new THREE.MeshBasicMaterial({
-        color: COLORS.WHITE,
-        side: THREE.DoubleSide
-    });
+    const material = MATERIALS.COURT_LINES
 
     const mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = true;
