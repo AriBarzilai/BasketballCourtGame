@@ -1,7 +1,9 @@
 
+// a dictionary mapping to indices of each <p> element in the ControlsText
 const INDEX = {
     "gui": 0
     , "camera": 1
+    , "zoomInOut": 2
 }
 
 function createControlsText(document, cameraIsEnabled = true) {
@@ -17,6 +19,7 @@ function createControlsText(document, cameraIsEnabled = true) {
     <h3>Controls:</h3>
     <p>H - Hide GUI</p>
     <p>O - Lock orbit camera</p>
+    <p>Mouse Wheel - Zoom in/out</p>
     `;
     updateInstructions(instructionsElement, cameraIsEnabled)
     document.body.appendChild(instructionsElement);
@@ -26,8 +29,16 @@ function createControlsText(document, cameraIsEnabled = true) {
 function _updateOrbitControlText(instructionsElement, isEnabled) {
     if (!instructionsElement) return;
     const pTags = instructionsElement.getElementsByTagName('p');
-    if (pTags.length >= 2) {
-        pTags[INDEX['camera']].textContent = isEnabled ? "O - Lock orbit camera" : "O - Unlock orbit camera";
+    if (isEnabled) {
+        pTags[INDEX['camera']].textContent = "O - Lock orbit camera"
+        if (pTags.length <= 2) {
+            const zoomP = document.createElement('p');
+            zoomP.textContent = 'Mouse Wheel - Zoom in/out';
+            instructionsElement.appendChild(zoomP);
+        }
+    } else {
+        pTags[INDEX['camera']].textContent = "O - Unlock orbit camera"
+        pTags[INDEX['zoomInOut']].remove()
     }
 }
 

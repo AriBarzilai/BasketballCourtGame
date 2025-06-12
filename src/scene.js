@@ -26,8 +26,12 @@ renderer.shadowMap.enabled = true;
 directionalLight.castShadow = true;
 
 // Create all elements
-scene.add(BasketballCourt());
-scene.add(Basketball());
+const courtData = BasketballCourt();
+scene.add(courtData.object);
+
+const basketballData = Basketball();
+basketballData.object.position.y = courtData.baseHeight + basketballData.baseHeight;
+scene.add(basketballData.object);
 
 // Set camera position for better view
 const cameraTranslate = new THREE.Matrix4();

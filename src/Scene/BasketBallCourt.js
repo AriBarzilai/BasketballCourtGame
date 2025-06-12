@@ -6,7 +6,8 @@ function BasketballCourt() {
     ///////////////////////
     // LAYER 0
     ///////////////////////
-    const courtGeometry = new THREE.BoxGeometry(94, 0.2, 50);
+    const courtThickness = 0.2 // thickness of the court surface
+    const courtGeometry = new THREE.BoxGeometry(94, courtThickness, 50);
     const { width, height } = courtGeometry.parameters;
     let layer = 0
     let layerHeight = utils.getLayerHeight(height, layer)
@@ -49,11 +50,6 @@ function BasketballCourt() {
         -13.75, layerHeight, 0,
         -33, layerHeight, 22
     ))
-    ///////////////////////
-    // LAYER 2
-    ///////////////////////
-    layer += 1
-    layerHeight = utils.getLayerHeight(height, layer)
     court.add(utils.Ring(0, layerHeight, 0, 6)) // center ring
     court.add(utils.Ring(28, layerHeight, 0, 6)) // right ring
     court.add(utils.Ring(-28, layerHeight, 0, 6)) // left ring
@@ -62,24 +58,30 @@ function BasketballCourt() {
     court.add(utils.Line( // center line
         0, layerHeight, 25,
         0, layerHeight, -25))
-    /////////
+    ///////////////////////
+    // COURT SURFACE Y VALUE
+    ///////////////////////
+    const baseFloorHeight = layerHeight // this is the "practical" Y=0 for the game
+    ///////////////////////
     // LAYER NEG 1
-    /////////
+    ///////////////////////
     layer = -1
     layerHeight = utils.getLayerHeight(height, layer)
-    const courtSurroundingGeometry = new THREE.BoxGeometry(109, 0.2, 60);
+    const courtSurroundingGeometry = new THREE.BoxGeometry(109, 0.1, 60);
     const courtSurroundingMaterial = new THREE.MeshPhongMaterial({
         color: utils.COLORS.GREEN,
         shininess: 30
     });
     const courtSurrounding = new THREE.Mesh(courtSurroundingGeometry, courtSurroundingMaterial);
-    courtSurrounding.position.set(0, layerHeight, 0)
+    courtSurrounding.position.set(0, -0.1 + layerHeight, 0)
     courtSurrounding.receiveShadow = true;
 
     court.add(courtSurrounding)
 
-    return court
+    return {
+        object: court
+        , baseHeight: baseFloorHeight
+    }
 }
-//function CenterLine()
 
 export { BasketballCourt };
