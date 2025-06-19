@@ -77,11 +77,32 @@ function BasketballCourt() {
     courtSurrounding.receiveShadow = true;
 
     court.add(courtSurrounding)
+    court.add(createCourtLogo());
 
     return {
         object: court
         , baseHeight: baseFloorHeight
     }
+}
+
+function createCourtLogo() {
+    const textureLoader = new THREE.TextureLoader();
+    
+    const logoTexture = textureLoader.load('src/Scene/textures/logo.png');
+    
+    const logoMaterial = new THREE.MeshPhongMaterial({
+        map: logoTexture,
+        transparent: true,
+        alphaTest: 0.1,
+        side: THREE.DoubleSide
+    });
+
+    const logoGeometry = new THREE.PlaneGeometry(16, 16);
+    logoGeometry.rotateX(-Math.PI / 2);
+    const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
+    logoMesh.position.set(0, 0.12, 0);
+
+    return logoMesh;
 }
 
 export { BasketballCourt };
