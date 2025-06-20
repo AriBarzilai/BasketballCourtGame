@@ -1,7 +1,7 @@
 import * as utils from '../utils.js'
 
 const POLE_HEIGHT = 10;
-const POLE_RADIUS = 0.1;
+const POLE_RADIUS = 0.7;
 const HOOP_HEIGHT = 10; 
 const BOARD_SCALE = 3;
 const RIM_RADIUS = 0.9;
@@ -52,7 +52,7 @@ function createBasketballPole() {
 }
 
 function createSupportArm() {
-    const armGeometry = new THREE.BoxGeometry(0.15, 0.15, 1.8);
+    const armGeometry = new THREE.BoxGeometry(0.2, 0.2, 1.8);
     const armMaterial = new THREE.MeshPhongMaterial({ color: utils.COLORS.BLACK }); 
     const arm = new THREE.Mesh(armGeometry, armMaterial);
     
@@ -73,7 +73,7 @@ function createBasketballBoard(){
     const backboard = new THREE.Mesh(backboardGeometry, backboardMaterial);
     boardGroup.add(backboard);
     
-    const borderThickness = 0.012 * BOARD_SCALE;
+    const borderThickness = 0.03 * BOARD_SCALE;
     const boardWidth = 1.83 * BOARD_SCALE;
     const boardHeight = 1.22 * BOARD_SCALE;
 
