@@ -10,11 +10,11 @@ function BasketballHoops() {
     const hoopsGroup = new THREE.Group();
     
     const leftHoop = createSingleHoop();
-    leftHoop.position.set(-45.78, 0, 0);
+    leftHoop.position.set(-45, 0, 0);
     leftHoop.rotation.y = Math.PI / 2;
 
     const rightHoop = createSingleHoop();
-    rightHoop.position.set(0, 0, 0);
+    rightHoop.position.set(45, 0, 0);
     rightHoop.rotation.y = -Math.PI / 2;
     
     hoopsGroup.add(leftHoop);
@@ -104,7 +104,6 @@ function createBasketballBoard(){
     );
     rightBorder.position.set(boardWidth/2 - borderThickness/2, 0, 0.001);
     boardGroup.add(rightBorder);
-    
 
     const innerThickness = 0.008 * BOARD_SCALE; 
     const squareWidth = 0.61 * BOARD_SCALE; 
@@ -154,8 +153,8 @@ function createBasketballRim() {
     const rimMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6600 });
     const rim = new THREE.Mesh(rimGeometry, rimMaterial);
 
-    const connectorLength = RIM_RADIUS / 2; 
-    const connectorGeometry = new THREE.BoxGeometry(connectorLength, 0.04 * 2, 0.04 * 2);
+    const connectorLength = RIM_RADIUS + 0.08 * 4;
+    const connectorGeometry = new THREE.BoxGeometry(connectorLength, 0.1 * 2, 0.1 * 2);
     const connectorMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6600 });
     const connector = new THREE.Mesh(connectorGeometry, connectorMaterial);
     
@@ -163,12 +162,12 @@ function createBasketballRim() {
     const backboardThickness = 0.05;
 
     const connectorY = HOOP_HEIGHT - 0.5 + (-squareHeight/2);
-    const connectorZ = -0.15 + backboardThickness/2 + connectorLength/2;
+    const connectorZ = backboardThickness/2;
     
-    connector.position.set(0, connectorY, connectorZ);
-    
+    connector.position.set(connectorZ, connectorY, 0);
+     
     const rimY = connectorY;
-    const rimZ = connectorZ + connectorLength/2 + RIM_RADIUS;
+    const rimZ = 0.11 + RIM_RADIUS;
     
     rim.position.set(0, rimY, rimZ);
     rim.rotation.x = Math.PI / 2;
