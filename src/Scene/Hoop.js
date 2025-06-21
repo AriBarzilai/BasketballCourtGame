@@ -148,16 +148,36 @@ function createBasketballBoard(){
 }
 
 function createBasketballRim() {
-    const rimGeometry = new THREE.TorusGeometry(RIM_RADIUS, 0.02, 8, 50);
+    const rimGroup = new THREE.Group();
+    
+    const rimGeometry = new THREE.TorusGeometry(RIM_RADIUS, 0.04, 8, 50);
     const rimMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6600 });
     const rim = new THREE.Mesh(rimGeometry, rimMaterial);
+
+    const connectorLength = RIM_RADIUS / 2; 
+    const connectorGeometry = new THREE.BoxGeometry(connectorLength, 0.04 * 2, 0.04 * 2);
+    const connectorMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6600 });
+    const connector = new THREE.Mesh(connectorGeometry, connectorMaterial);
     
-    const squareHeight = 0.457;
-    const rimY = HOOP_HEIGHT - 0.5 + (-squareHeight/2);    
-    rim.position.set(0, rimY, 0.30);
+    const squareHeight = 0.457 * BOARD_SCALE;
+    const backboardThickness = 0.05;
+
+    const connectorY = HOOP_HEIGHT - 0.5 + (-squareHeight/2);
+    const connectorZ = -0.15 + backboardThickness/2 + connectorLength/2;
+    
+    connector.position.set(0, connectorY, connectorZ);
+    
+    const rimY = connectorY;
+    const rimZ = connectorZ + connectorLength/2 + RIM_RADIUS;
+    
+    rim.position.set(0, rimY, rimZ);
     rim.rotation.x = Math.PI / 2;
     rim.castShadow = true;
-    return rim;
+
+    rimGroup.add(connector);
+    rimGroup.add(rim);
+
+    return rimGroup;
 }
 
 // function createBasketballNet() {
