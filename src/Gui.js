@@ -1,50 +1,319 @@
-
-// a dictionary mapping to indices of each <p> element in the ControlsText
-const INDEX = {
-    "gui": 0
-    , "camera": 1
-    , "zoomInOut": 2
-}
-
-function createControlsText(document, cameraIsEnabled = true) {
-    const instructionsElement = document.createElement('div');
-    instructionsElement.style.position = 'absolute';
-    instructionsElement.style.bottom = '20px';
-    instructionsElement.style.left = '20px';
-    instructionsElement.style.color = 'white';
-    instructionsElement.style.fontSize = '16px';
-    instructionsElement.style.fontFamily = 'Arial, sans-serif';
-    instructionsElement.style.textAlign = 'left';
-    instructionsElement.innerHTML = `
-    <h3>Controls:</h3>
-    <p>H - Hide GUI</p>
-    <p>O - Lock orbit camera</p>
-    <p>Mouse Wheel - Zoom in/out</p>
+function createScoreContainer(document) {
+    const container = document.createElement('div');
+    container.id = 'score-container';
+    container.className = 'score-container';
+    
+    // Create score title
+    const scoreTitle = document.createElement('h2');
+    scoreTitle.textContent = 'Score Board';
+    scoreTitle.className = 'score-title';
+    
+    // Create score display area
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.id = 'score-display';
+    scoreDisplay.className = 'score-display';
+    scoreDisplay.innerHTML = `
+        <div class="team-score">
+            <span class="team-name">Player</span>
+            <span class="score-value" id="player-score">0</span>
+        </div>
+        <div class="score-separator">-</div>
+        <div class="team-score">
+            <span class="team-name">Computer</span>
+            <span class="score-value" id="computer-score">0</span>
+        </div>
     `;
-    updateInstructions(instructionsElement, cameraIsEnabled)
-    document.body.appendChild(instructionsElement);
-    return instructionsElement
+
+    container.appendChild(scoreTitle);
+    container.appendChild(scoreDisplay);
+        
+    return container;
 }
 
-function _updateOrbitControlText(instructionsElement, isEnabled) {
-    if (!instructionsElement) return;
-    const pTags = instructionsElement.getElementsByTagName('p');
-    if (isEnabled) {
-        pTags[INDEX['camera']].textContent = "O - Lock orbit camera"
-        if (pTags.length <= 2) {
-            const zoomP = document.createElement('p');
-            zoomP.textContent = 'Mouse Wheel - Zoom in/out';
-            instructionsElement.appendChild(zoomP);
+function createEnhancedControlsContainer(document) {
+    const container = document.createElement('div');
+    container.id = 'enhanced-controls-container';
+    container.className = 'enhanced-controls-container';
+    
+    const controlsTitle = document.createElement('h3');
+    controlsTitle.textContent = 'Game Controls';
+    controlsTitle.className = 'enhanced-controls-title';
+    
+    const controlsList = document.createElement('div');
+    controlsList.id = 'enhanced-controls-list';
+    controlsList.className = 'enhanced-controls-list';
+    
+    container.appendChild(controlsTitle);
+    container.appendChild(controlsList);
+    
+    return container;
+}
+
+// Updates the enhanced controls display based on current state
+function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled) {
+    const controlsList = controlsContainer.querySelector('#enhanced-controls-list');
+
+    const currentControls = `
+        <div class="control-section current-controls">
+            <h4>Display Controls:</h4>
+            <div class="control-item">
+                <span class="control-key">H</span>
+                <span class="control-desc">Hide/Show GUI</span>
+            </div>
+            <div class="control-item">
+                <span class="control-key">O</span>
+                <span class="control-desc">Toggle orbit camera ${isOrbitEnabled ? '(Enabled)' : '(Disabled)'}</span>
+            </div>
+            <div class="control-item">
+                <span class="control-key">Mouse Wheel</span>
+                <span class="control-desc">Zoom in/out ${isOrbitEnabled ? '(Available)' : '(Disabled)'}</span>
+            </div>
+        </div>
+    `;
+    controlsList.innerHTML = currentControls;
+}
+
+
+// Create the complete UI framework
+function createCompleteUIFramework(document) {
+    // Add CSS styles
+    addUIFrameworkStyles(document);
+    
+    const mainContainer = document.createElement('div');
+    mainContainer.id = 'main-ui-container';
+    mainContainer.className = 'main-ui-container';
+    
+    const scoreContainer = createScoreContainer(document);
+    const controlsContainer = createEnhancedControlsContainer(document);
+    
+    mainContainer.appendChild(scoreContainer);
+    mainContainer.appendChild(controlsContainer);
+    
+    return {
+        mainContainer: mainContainer,
+        scoreContainer: scoreContainer,
+        controlsContainer: controlsContainer
+    };
+}
+
+
+// Add comprehensive CSS styles for the UI framework
+function addUIFrameworkStyles(document) { 
+    const style = document.createElement('style');
+    style.id = 'hw05-ui-styles';
+    style.textContent = `
+        /* Main UI Container */
+        .main-ui-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1000;
+            font-family: 'Arial', sans-serif;
         }
-    } else {
-        pTags[INDEX['camera']].textContent = "O - Unlock orbit camera"
-        pTags[INDEX['zoomInOut']].remove()
-    }
+        
+        /* Score Container Styles */
+        .score-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #444;
+            backdrop-filter: blur(8px);
+            pointer-events: auto;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .score-title {
+            margin: 0 0 15px 0;
+            font-size: 1.4em;
+            color: #ff6b35;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+        }
+        
+        .score-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .team-score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .team-name {
+            font-size: 0.85em;
+            margin-bottom: 4px;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .score-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4CAF50;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .score-separator {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 0 15px;
+            color: #666;
+        }
+        
+        .score-note {
+            font-size: 0.75em;
+            color: #888;
+            text-align: center;
+            margin: 8px 0 0 0;
+            font-style: italic;
+        }
+        
+        /* Enhanced Controls Container */
+        .enhanced-controls-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #444;
+            backdrop-filter: blur(8px);
+            pointer-events: auto;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .enhanced-controls-title {
+            margin: 0 0 15px 0;
+            font-size: 1.3em;
+            color: #ff6b35;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+        }
+        
+        .control-section {
+            margin-bottom: 20px;
+        }
+        
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-section h4 {
+            margin: 0 0 12px 0;
+            font-size: 1em;
+            color: #4CAF50;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        
+        .current-controls h4 {
+            color: #4CAF50;
+        }
+        
+        .future-controls {
+            border-top: 1px solid #444;
+            padding-top: 15px;
+            opacity: 0.7;
+        }
+        
+        .future-controls h4 {
+            color: #ff9800;
+        }
+        
+        .control-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .control-item:hover:not(.disabled) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-item.disabled {
+            opacity: 0.5;
+        }
+        
+        .control-key {
+            background: linear-gradient(145deg, #333, #222);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            margin-right: 12px;
+            min-width: 60px;
+            text-align: center;
+            border: 1px solid #555;
+            font-size: 0.85em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .disabled .control-key {
+            background: linear-gradient(145deg, #444, #333);
+            color: #888;
+            border-color: #666;
+        }
+        
+        .control-desc {
+            flex: 1;
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .score-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+            
+            .enhanced-controls-container {
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .enhanced-controls-container {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+        }
+    `;
+    
+    document.head.appendChild(style);
 }
 
-function updateInstructions(instructionsElement, cameraIsEnabled) {
-    _updateOrbitControlText(instructionsElement, cameraIsEnabled)
+// ===== EXPORTS =====
+export { 
+    createCompleteUIFramework,
+    updateEnhancedControlsDisplay,
 }
-
-
-export { createControlsText, updateInstructions }

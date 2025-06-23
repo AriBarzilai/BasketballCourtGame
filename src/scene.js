@@ -48,23 +48,31 @@ const controls = new OrbitControls(camera, renderer.domElement);
 let isOrbitEnabled = true;
 
 // Instructions display
-let instructionsElement = gui.createControlsText(document);
-document.body.appendChild(instructionsElement);
+const uiFramework = gui.createCompleteUIFramework(document);
+document.body.appendChild(uiFramework.mainContainer);
+
+// Initialize the enhanced controls display
+gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled);
+
+let isUIVisible = true;
 
 // Handle key events
 function handleKeyDown(e) {
-  if (e.key === "h") {
-    if (instructionsElement) {
-      instructionsElement.remove()
-      instructionsElement = null;
-    } else {
-      instructionsElement = gui.createControlsText(document);
-      document.body.appendChild(instructionsElement);
+  if (e.key === "h" || e.key === "H") {
+    // Toggle UI visibility
+    isUIVisible = !isUIVisible;
+    if (isUIVisible) {
+      uiFramework.mainContainer.style.display = 'block';
+    } 
+    else {
+      uiFramework.mainContainer.style.display = 'none';
     }
   }
-  if (e.key === "o") {
-    isOrbitEnabled = !isOrbitEnabled;
-    gui.updateInstructions(instructionsElement, isOrbitEnabled)
+  
+  if (e.key === "o" || e.key === "O") {
+      // Toggle orbit controls
+      isOrbitEnabled = !isOrbitEnabled;
+      gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled);
   }
 }
 
@@ -83,6 +91,15 @@ function draw() {
   renderer.render(scene, camera);
 }
 
+// Handle window resize
+function handleResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+window.addEventListener('resize', handleResize);
+
+// Start the application
 update();
 draw();
-
