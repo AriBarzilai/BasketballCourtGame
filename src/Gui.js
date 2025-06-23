@@ -70,7 +70,38 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled) {
             </div>
         </div>
     `;
-    controlsList.innerHTML = currentControls;
+
+    // Play controls
+    const playControls = `
+        <div class="control-section future-controls">
+            <h4>Ball Controls:</h4>
+            <div class="control-item disabled">
+                <span class="control-key">←→</span>
+                <span class="control-desc">Move ball horizontally</span>
+            </div>
+            <div class="control-item disabled">
+                <span class="control-key">↑↓</span>
+                <span class="control-desc">Move ball forward/backward</span>
+            </div>
+            <div class="control-item disabled">
+                <span class="control-key">W</span>
+                <span class="control-desc">Increase shot power</span>
+            </div>
+            <div class="control-item disabled">
+                <span class="control-key">S</span>
+                <span class="control-desc">Decrease shot power</span>
+            </div>
+            <div class="control-item disabled">
+                <span class="control-key">Space</span>
+                <span class="control-desc">Launch ball toward hoop</span>
+            </div>
+            <div class="control-item disabled">
+                <span class="control-key">R</span>
+                <span class="control-desc">Reset ball to center</span>
+            </div>
+        </div>
+    `;
+    controlsList.innerHTML = currentControls + playControls;
 }
 
 
@@ -118,7 +149,8 @@ function addUIFrameworkStyles(document) {
         .score-container {
             position: absolute;
             top: 20px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.85);
             color: white;
             padding: 20px;
@@ -191,26 +223,27 @@ function addUIFrameworkStyles(document) {
             left: 20px;
             background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 8px;
             border: 2px solid #444;
             backdrop-filter: blur(8px);
             pointer-events: auto;
-            max-width: 400px;
+            max-width: 200px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-size: 0.8em;
         }
         
         .enhanced-controls-title {
-            margin: 0 0 15px 0;
-            font-size: 1.3em;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
             color: #ff6b35;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
             border-bottom: 1px solid #444;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
         
         .control-section {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         
         .control-section:last-child {
@@ -218,8 +251,8 @@ function addUIFrameworkStyles(document) {
         }
         
         .control-section h4 {
-            margin: 0 0 12px 0;
-            font-size: 1em;
+            margin: 0 0 8px 0;
+            font-size: 0.9em;
             color: #4CAF50;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -232,7 +265,7 @@ function addUIFrameworkStyles(document) {
         
         .future-controls {
             border-top: 1px solid #444;
-            padding-top: 15px;
+            padding-top: 10px;
             opacity: 0.7;
         }
         
@@ -243,9 +276,9 @@ function addUIFrameworkStyles(document) {
         .control-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            padding: 6px;
-            border-radius: 6px;
+            margin-bottom: 4px;
+            padding: 3px;
+            border-radius: 4px;
             transition: background-color 0.3s ease;
         }
         
@@ -260,15 +293,15 @@ function addUIFrameworkStyles(document) {
         .control-key {
             background: linear-gradient(145deg, #333, #222);
             color: #fff;
-            padding: 6px 10px;
-            border-radius: 6px;
+            padding: 3px 6px;
+            border-radius: 4px;
             font-family: monospace;
             font-weight: bold;
-            margin-right: 12px;
-            min-width: 60px;
+            margin-right: 8px;
+            min-width: 40px;
             text-align: center;
             border: 1px solid #555;
-            font-size: 0.85em;
+            font-size: 0.75em;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
@@ -280,16 +313,17 @@ function addUIFrameworkStyles(document) {
         
         .control-desc {
             flex: 1;
-            font-size: 0.9em;
-            line-height: 1.3;
+            font-size: 0.8em;
+            line-height: 1.2;
         }
         
         /* Responsive Design */
         @media (max-width: 768px) {
             .score-container {
                 top: 10px;
-                right: 10px;
                 left: 10px;
+                right: 10px;
+                transform: none;
                 min-width: auto;
             }
             
@@ -303,7 +337,7 @@ function addUIFrameworkStyles(document) {
         
         @media (max-height: 600px) {
             .enhanced-controls-container {
-                max-height: 300px;
+                max-height: 200px;
                 overflow-y: auto;
             }
         }
