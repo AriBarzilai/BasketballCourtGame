@@ -32,6 +32,7 @@ scene.add(courtData.object);
 
 const basketballData = Basketball();
 basketballData.object.position.y = courtData.baseHeight + basketballData.baseHeight;
+basketballData.object.position.x = 0;
 scene.add(basketballData.object);
 
 const hoopData = BasketballHoops();
@@ -46,6 +47,7 @@ camera.applyMatrix4(cameraTranslate);
 // Orbit controls
 const controls = new OrbitControls(camera, renderer.domElement);
 let isOrbitEnabled = true;
+let isDiagnosticsEnabled = false;
 
 // Instructions display
 const uiFramework = gui.createCompleteUIFramework(document);
@@ -53,6 +55,9 @@ document.body.appendChild(uiFramework.mainContainer);
 
 // Initialize the enhanced controls display
 gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled);
+
+// Add camera info container to DOM (top left)
+document.body.appendChild(uiFramework.diagnosticsInfoContainer);
 
 let isUIVisible = true;
 
@@ -63,25 +68,57 @@ function handleKeyDown(e) {
     isUIVisible = !isUIVisible;
     if (isUIVisible) {
       uiFramework.mainContainer.style.display = 'block';
-    } 
+      uiFramework.diagnosticsInfoContainer.style.display = isDiagnosticsEnabled ? 'block' : 'block';
+    }
     else {
       uiFramework.mainContainer.style.display = 'none';
+      uiFramework.diagnosticsInfoContainer.style.display = 'none';
     }
   }
-  
+
   if (e.key === "o" || e.key === "O") {
-      // Toggle orbit controls
-      isOrbitEnabled = !isOrbitEnabled;
-      gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled);
+    // Toggle orbit controls
+    isOrbitEnabled = !isOrbitEnabled;
+    gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled);
+  }
+
+  if (e.key === "c" || e.key === "C") {
+    controls.setPresetCamera()
+  }
+
+  if (e.key === '`' || e.key === '~') {
+    // Toggle diagnostics display
+    isDiagnosticsEnabled = !isDiagnosticsEnabled;
+    uiFramework.diagnosticsInfoContainer.style.display = (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
   }
 }
 
 document.addEventListener('keydown', handleKeyDown);
 
+// Display diagnostics such as camera position/direction, ball position, etc.
+function updateDiagnosticsInfo(camera) {
+  // Camera position
+  const pos = camera.position;
+  // Camera facing direction (normalized vector)
+  const target = new THREE.Vector3();
+  camera.getWorldDirection(target);
+
+  // Format numbers to 2 decimals
+  function fmt(v) { return v.toFixed(2); }
+
+  uiFramework.diagnosticsInfoContainer.innerHTML =
+    `<b>Camera Position:</b> (${fmt(pos.x)}, ${fmt(pos.y)}, ${fmt(pos.z)})<br>` +
+    `<b>Camera Facing:</b> (${fmt(target.x)}, ${fmt(target.y)}, ${fmt(target.z)})`
+  uiFramework.diagnosticsInfoContainer.style.display =
+    (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
+}
+
 function update() {
   // Update controls
   controls.enabled = isOrbitEnabled;
   controls.update();
+  // Update camera diagnostics
+  gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, isUIVisible, isDiagnosticsEnabled);
 }
 
 // Animation function
@@ -101,5 +138,4 @@ function handleResize() {
 window.addEventListener('resize', handleResize);
 
 // Start the application
-update();
 draw();

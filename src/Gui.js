@@ -2,12 +2,12 @@ function createScoreContainer(document) {
     const container = document.createElement('div');
     container.id = 'score-container';
     container.className = 'score-container';
-    
+
     // Create score title
     const scoreTitle = document.createElement('h2');
     scoreTitle.textContent = 'Score Board';
     scoreTitle.className = 'score-title';
-    
+
     // Create score display area
     const scoreDisplay = document.createElement('div');
     scoreDisplay.id = 'score-display';
@@ -26,7 +26,7 @@ function createScoreContainer(document) {
 
     container.appendChild(scoreTitle);
     container.appendChild(scoreDisplay);
-        
+
     return container;
 }
 
@@ -34,23 +34,43 @@ function createEnhancedControlsContainer(document) {
     const container = document.createElement('div');
     container.id = 'enhanced-controls-container';
     container.className = 'enhanced-controls-container';
-    
+
     const controlsTitle = document.createElement('h3');
     controlsTitle.textContent = 'Game Controls';
     controlsTitle.className = 'enhanced-controls-title';
-    
+
     const controlsList = document.createElement('div');
     controlsList.id = 'enhanced-controls-list';
     controlsList.className = 'enhanced-controls-list';
-    
+
     container.appendChild(controlsTitle);
     container.appendChild(controlsList);
-    
+
+    return container;
+}
+
+function createDiagnosticsInfoContainer(document) {
+    const container = document.createElement('div');
+    container.id = 'camera-info-container';
+    container.className = 'camera-info-container';
+    container.style.position = 'absolute';
+    container.style.top = '20px';
+    container.style.left = '20px';
+    container.style.background = 'rgba(0,0,0,0.7)';
+    container.style.color = 'white';
+    container.style.padding = '10px';
+    container.style.borderRadius = '8px';
+    container.style.fontFamily = 'monospace';
+    container.style.fontSize = '0.95em';
+    container.style.zIndex = '2000';
+    container.style.pointerEvents = 'auto';
+    container.innerText = 'Camera Info';
+    container.style.display = 'none';
     return container;
 }
 
 // Updates the enhanced controls display based on current state
-function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled) {
+function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiagnosticsEnabled) {
     const controlsList = controlsContainer.querySelector('#enhanced-controls-list');
 
     const currentControls = `
@@ -58,11 +78,19 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled) {
             <h4>Display Controls:</h4>
             <div class="control-item">
                 <span class="control-key">H</span>
-                <span class="control-desc">Hide/Show GUI</span>
+                <span class="control-desc">Toggle GUI</span>
+            </div>
+            <div class="control-item">
+                <span class="control-key">~</span>
+                <span class="control-desc">Toggle Diagnostics ${isDiagnosticsEnabled ? '(Enabled)' : '(Disabled)'}</span>
             </div>
             <div class="control-item">
                 <span class="control-key">O</span>
                 <span class="control-desc">Toggle orbit camera ${isOrbitEnabled ? '(Enabled)' : '(Disabled)'}</span>
+            </div>
+            <div class="control-item">
+                <span class="control-key">C</span>
+                <span class="control-desc">Cycle preset camera positions</span>
             </div>
             <div class="control-item">
                 <span class="control-key">Mouse Wheel</span>
@@ -76,20 +104,12 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled) {
         <div class="control-section future-controls">
             <h4>Ball Controls:</h4>
             <div class="control-item disabled">
-                <span class="control-key">←→</span>
-                <span class="control-desc">Move ball horizontally</span>
+                <span class="control-key">Arrow Keys</span>
+                <span class="control-desc">Move ball</span>
             </div>
             <div class="control-item disabled">
-                <span class="control-key">↑↓</span>
-                <span class="control-desc">Move ball forward/backward</span>
-            </div>
-            <div class="control-item disabled">
-                <span class="control-key">W</span>
-                <span class="control-desc">Increase shot power</span>
-            </div>
-            <div class="control-item disabled">
-                <span class="control-key">S</span>
-                <span class="control-desc">Decrease shot power</span>
+                <span class="control-key">W/S</span>
+                <span class="control-desc">Increase/Decrease shot power</span>
             </div>
             <div class="control-item disabled">
                 <span class="control-key">Space</span>
@@ -104,32 +124,53 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled) {
     controlsList.innerHTML = currentControls + playControls;
 }
 
+// Display diagnostics such as camera position/direction, ball position, etc.
+function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, isUIVisible, isDiagnosticsEnabled) {
+    // Camera position
+    const pos = camera.position;
+    // Camera facing direction (normalized vector)
+    const target = new THREE.Vector3();
+    camera.getWorldDirection(target);
+
+    // Format numbers to 2 decimals
+    function fmt(v) { return v.toFixed(2); }
+
+    diagnosticsInfoContainer.innerHTML =
+        `<b>Camera Position:</b> (${fmt(pos.x)}, ${fmt(pos.y)}, ${fmt(pos.z)})<br>` +
+        `<b>Camera Facing:</b> (${fmt(target.x)}, ${fmt(target.y)}, ${fmt(target.z)})`
+    diagnosticsInfoContainer.style.display =
+        (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
+}
 
 // Create the complete UI framework
 function createCompleteUIFramework(document) {
     // Add CSS styles
     addUIFrameworkStyles(document);
-    
+
     const mainContainer = document.createElement('div');
     mainContainer.id = 'main-ui-container';
     mainContainer.className = 'main-ui-container';
-    
+
     const scoreContainer = createScoreContainer(document);
     const controlsContainer = createEnhancedControlsContainer(document);
-    
+    const diagnosticsInfoContainer = createDiagnosticsInfoContainer(document);
+
     mainContainer.appendChild(scoreContainer);
     mainContainer.appendChild(controlsContainer);
-    
+    mainContainer.appendChild(diagnosticsInfoContainer);
+
+
     return {
-        mainContainer: mainContainer,
-        scoreContainer: scoreContainer,
-        controlsContainer: controlsContainer
+        mainContainer: mainContainer
+        , scoreContainer: scoreContainer
+        , controlsContainer: controlsContainer
+        , diagnosticsInfoContainer: diagnosticsInfoContainer
     };
 }
 
 
 // Add comprehensive CSS styles for the UI framework
-function addUIFrameworkStyles(document) { 
+function addUIFrameworkStyles(document) {
     const style = document.createElement('style');
     style.id = 'hw05-ui-styles';
     style.textContent = `
@@ -342,12 +383,13 @@ function addUIFrameworkStyles(document) {
             }
         }
     `;
-    
+
     document.head.appendChild(style);
 }
 
 // ===== EXPORTS =====
-export { 
+export {
     createCompleteUIFramework,
     updateEnhancedControlsDisplay,
+    updateDiagnosticsInfo,
 }

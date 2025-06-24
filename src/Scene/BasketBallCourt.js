@@ -12,10 +12,7 @@ function BasketballCourt() {
     let layer = 0
     let layerHeight = utils.getLayerHeight(height, layer)
 
-    const courtMaterial = new THREE.MeshPhongMaterial({
-        color: utils.COLORS.BROWN,
-        shininess: 50
-    });
+    const courtMaterial = utils.MATERIALS.COURT
     const court = new THREE.Mesh(courtGeometry, courtMaterial);
     court.receiveShadow = true;
     ///////////////////////
@@ -68,13 +65,11 @@ function BasketballCourt() {
     layer = -1
     layerHeight = utils.getLayerHeight(height, layer)
     const courtSurroundingGeometry = new THREE.BoxGeometry(109, 0.1, 60);
-    const courtSurroundingMaterial = new THREE.MeshPhongMaterial({
-        color: utils.COLORS.GREEN,
-        shininess: 30
-    });
+    const courtSurroundingMaterial = utils.MATERIALS.COURT_SURROUNDINGS
     const courtSurrounding = new THREE.Mesh(courtSurroundingGeometry, courtSurroundingMaterial);
     courtSurrounding.position.set(0, -0.1 + layerHeight, 0)
     courtSurrounding.receiveShadow = true;
+
 
     court.add(courtSurrounding)
     court.add(createCourtLogo());
@@ -87,9 +82,10 @@ function BasketballCourt() {
 
 function createCourtLogo() {
     const textureLoader = new THREE.TextureLoader();
-    
-    const logoTexture = textureLoader.load('src/Scene/textures/logo.png');
-    
+
+    const logoTexture = textureLoader.load('src/Scene/textures/logo.svg');
+    // logoTexture.minFilter = THREE.NearestMipMapLinearFilter;
+    logoTexture.minFilter = THREE.LinearFilter;
     const logoMaterial = new THREE.MeshPhongMaterial({
         map: logoTexture,
         transparent: true,
@@ -97,11 +93,11 @@ function createCourtLogo() {
         side: THREE.DoubleSide
     });
 
-    const logoGeometry = new THREE.PlaneGeometry(16, 16);
+    const logoGeometry = new THREE.PlaneGeometry(14, 14);
     logoGeometry.rotateX(-Math.PI / 2);
     const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
-    logoMesh.position.set(0, 0.12, 0);
-
+    logoMesh.position.set(0, 0.12, 0.5);
+    logoMesh.receiveShadow = true
     return logoMesh;
 }
 

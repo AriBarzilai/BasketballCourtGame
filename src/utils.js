@@ -18,6 +18,18 @@ export const MATERIALS = {
         specular: 0xaaaaaa,
         side: THREE.DoubleSide
     })
+    , COURT: new THREE.MeshPhongMaterial({
+        color: COLORS.BROWN
+        , shininess: 50
+        // , specular: 0xaaaaaa
+        , side: THREE.DoubleSide
+    })
+    , COURT_SURROUNDINGS: new THREE.MeshPhongMaterial({
+        color: COLORS.GREEN
+        , shininess: 30
+        , specular: 0x300000
+        , side: THREE.DoubleSide
+    })
 }
 ///////////////////////
 // MATH HELPERS
