@@ -18,3 +18,7 @@
 ## Technical Details
 - Run the server with: `node index.js`
 - Access at http://localhost:8000 in your web browser
+
+## Additional Features
+- We decided to create the Boston Celtics home court since they are the best team, which means we have the best court. 
+- The colors around the field match the team's color, and the logo is printed onto the center circle of the field.
