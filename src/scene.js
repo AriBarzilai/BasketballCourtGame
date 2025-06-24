@@ -28,11 +28,11 @@ renderer.shadowMap.enabled = true;
 directionalLight.shadow.mapSize.width = 2048;
 directionalLight.shadow.mapSize.height = 2048;
 directionalLight.castShadow = true;
-directionalLight.shadow.camera.top = 50;     // Reduce from 150
-directionalLight.shadow.camera.bottom = -50; // Reduce from -200
-directionalLight.shadow.camera.left = -50;   // Reduce from -200
-directionalLight.shadow.camera.right = 50;  // Reduce from 200
-directionalLight.shadow.camera.far = 100;    // Keep or adjust as needed
+directionalLight.shadow.camera.top = 50;
+directionalLight.shadow.camera.bottom = -50;
+directionalLight.shadow.camera.left = -50;
+directionalLight.shadow.camera.right = 50;
+directionalLight.shadow.camera.far = 100;
 
 
 // Create all elements
@@ -128,6 +128,7 @@ function update() {
   controls.update();
   // Update camera diagnostics
   gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, isUIVisible, isDiagnosticsEnabled);
+  gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled)
 }
 
 // Animation function
