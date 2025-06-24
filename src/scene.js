@@ -20,11 +20,20 @@ scene.add(ambientLight);
 
 const directionalLight = new THREE.DirectionalLight(utils.COLORS.WHITE, 0.8);
 directionalLight.position.set(10, 20, 15);
+
 scene.add(directionalLight);
 
 // Enable shadows
 renderer.shadowMap.enabled = true;
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
 directionalLight.castShadow = true;
+directionalLight.shadow.camera.top = 50;     // Reduce from 150
+directionalLight.shadow.camera.bottom = -50; // Reduce from -200
+directionalLight.shadow.camera.left = -50;   // Reduce from -200
+directionalLight.shadow.camera.right = 50;  // Reduce from 200
+directionalLight.shadow.camera.far = 100;    // Keep or adjust as needed
+
 
 // Create all elements
 const courtData = BasketballCourt();
