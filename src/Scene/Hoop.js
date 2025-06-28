@@ -147,6 +147,69 @@ function createBasketballBoard() {
     return boardGroup;
 }
 
+function createBasketballNet(rimY, rimZ) {
+
+    /* 1 ─ choose basic proportions (tweak at will) */
+    const rTop = RIM_RADIUS * 0.8;    // top radius – just inside the rim
+    const rBottom = RIM_RADIUS;   // bottom radius – taper
+    const hNet = 1.3;                 // net depth in metres
+
+    /* 2 ─ create a *plain* cylinder just to steal its vertices
+           radialSegs & heightSegs control diamond density          */
+    const radialSegs = 8;   // more = finer diamonds round-the-rim
+    const heightSegs = 8;    // more = more rows of diamonds down the net
+
+    const cyl = new THREE.CylinderGeometry(
+        rBottom, rTop, hNet,
+        radialSegs, heightSegs,
+        true                         // openEnded → no caps
+    );
+    cyl.rotateY(Math.PI / radialSegs);    // centre the diamonds nicely
+
+    /* 3 ─ build our own BufferGeometry containing ONLY diagonals     */
+    const srcPos = cyl.getAttribute('position');   // read-only helper
+    const positions = [];                          // will hold X,Y,Z triples
+
+    /* helper – push vertex i’s xyz into positions */
+    const add = (i) => {
+        positions.push(srcPos.getX(i), srcPos.getY(i), srcPos.getZ(i));
+    };
+
+    /* mapping: for each grid square (i , j) … */
+    const cols = radialSegs + 1;   // +1 because CylinderGeometry repeats the first column to close the seam
+    for (let j = 0; j < heightSegs; ++j) {
+        for (let i = 0; i < radialSegs; ++i) {
+
+            /* square’s four corners in the vertex buffer            */
+            const a = j * cols + i;       // lower-left
+            const b = j * cols + (i + 1);  // lower-right
+            const c = (j + 1) * cols + i;       // upper-left
+            const d = (j + 1) * cols + (i + 1);  // upper-right
+
+            /* two crossing diagonals:  a─d  and  b─c                */
+            add(a); add(d);      // first diagonal segment
+            add(b); add(c);      // second diagonal segment
+        }
+    }
+
+    /* 4 ─ wrap those coordinates into a LineSegments mesh            */
+    const diagGeom = new THREE.BufferGeometry();
+    diagGeom.setAttribute('position',
+        new THREE.Float32BufferAttribute(positions, 3)
+    );
+
+    const lines = new THREE.LineSegments(
+        diagGeom,
+        new THREE.LineBasicMaterial({ color: utils.COLORS.WHITE })
+    );
+
+    /* 5 ─ hang the net so its *top edge* kisses the rim’s underside  */
+    lines.position.set(0, rimY - hNet / 2, rimZ);
+    lines.castShadow = true
+
+    return lines;
+}
+
 function createBasketballRim() {
     const rimGroup = new THREE.Group();
 
@@ -170,13 +233,15 @@ function createBasketballRim() {
     const rimY = connectorY;
     const rimZ = 0.11 + RIM_RADIUS;
 
+    const net = createBasketballNet(rimY, rimZ);
+
     rim.position.set(0, rimY, rimZ);
     rim.rotation.x = Math.PI / 2;
     rim.castShadow = true;
 
     rimGroup.add(connector);
     rimGroup.add(rim);
-
+    rimGroup.add(net);
     return rimGroup;
 }
 

@@ -69,7 +69,6 @@ gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled)
 document.body.appendChild(uiFramework.diagnosticsInfoContainer);
 
 let isUIVisible = true;
-
 // Handle key events
 function handleKeyDown(e) {
   if (e.key === "h" || e.key === "H") {

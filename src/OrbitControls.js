@@ -151,12 +151,29 @@ class OrbitControls extends EventDispatcher {
 		 * Moves the camera to (0, 38, 0) so that it sits directly above the origin,
 		 * and makes it look straight down (0,-1,0).
 		 */
+		this.next_preset_scene_number = 1; // used to determine which position to set camera to when calling function
 		this.setPresetCamera = function () {
-			this.object.position.set(0, 38, 0);
-			this.target.set(0, 0, 0);
-			this.object.lookAt(this.target);
+			// this.object.position.set(0, 38, 0);
+			// this.target.set(0, 0, 0);
+			switch (this.next_preset_scene_number) {
+				case 1:
+					this.object.position.set(0, 38, 0);
+					this.target.set(0, 0, 0);
+					break;
+				case 2:
+					this.object.position.set(-6.78, 2.86, 0.06);
+					this.target.set(0.92, -0.39, -0.01);
+					break;
+				default:
+					// starting position of game
+					this.object.position.set(0, 30, 60);
+					this.target.set(0, -0.45, -0.89);
+					break;
+			}
 			// sync OrbitControls internals so the next frame is seamless
+			this.object.lookAt(this.target);
 			this.update();
+			this.next_preset_scene_number = (this.next_preset_scene_number + 1) % 3
 		};
 		// this method is exposed, but perhaps it would be better if we can make it private...
 		this.update = function () {
