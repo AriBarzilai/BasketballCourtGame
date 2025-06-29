@@ -16,6 +16,7 @@
 - Netta Yaniv
 
 ## Technical Details
+- Run npm install
 - Run the server with: `node index.js`
 - Access at http://localhost:8000 in your web browser
 - All demo screenshots are stored in the demo-pictures folder
