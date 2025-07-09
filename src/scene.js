@@ -4,6 +4,9 @@ import { OrbitControls } from './OrbitControls.js'
 import { BasketballCourt } from './Scene/BasketBallCourt.js'
 import { Basketball } from './Scene/Basketball.js';
 import { BasketballHoops } from './Scene/Hoop.js';
+import PlayerControls from './PlayerControls.js'
+
+const CLOCK = new THREE.Clock()
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -44,6 +47,9 @@ basketballData.object.position.y = courtData.baseHeight + basketballData.baseHei
 basketballData.object.position.x = 0;
 scene.add(basketballData.object);
 
+// Add player controls for basketball
+const playerControls = new PlayerControls(courtData, basketballData);
+
 const hoopData = BasketballHoops();
 hoopData.object.position.y = courtData.baseHeight;
 scene.add(hoopData.object);
@@ -71,7 +77,8 @@ document.body.appendChild(uiFramework.diagnosticsInfoContainer);
 let isUIVisible = true;
 // Handle key events
 function handleKeyDown(e) {
-  if (e.key === "h" || e.key === "H") {
+  const key = e.key.toLowerCase();
+  if (key === "h") {
     // Toggle UI visibility
     isUIVisible = !isUIVisible;
     if (isUIVisible) {
@@ -84,27 +91,40 @@ function handleKeyDown(e) {
     }
   }
 
-  if (e.key === "o" || e.key === "O") {
+  if (key === "o") {
     // Toggle orbit controls
     isOrbitEnabled = !isOrbitEnabled;
     gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled);
   }
 
-  if (e.key === "c" || e.key === "C") {
+  if (key === "c") {
     controls.setPresetCamera()
   }
 
-  if (e.key === '`' || e.key === '~') {
+  if (key === '`') {
     // Toggle diagnostics display
     isDiagnosticsEnabled = !isDiagnosticsEnabled;
     uiFramework.diagnosticsInfoContainer.style.display = (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
   }
+
+  if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
+    playerControls.keyStates[e.key] = true;
+  }
 }
 
+function handleKeyUp(e) {
+  const key = e.key.toLowerCase();
+  if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
+    playerControls.keyStates[e.key] = false;
+  }
+}
+
+
 document.addEventListener('keydown', handleKeyDown);
+document.addEventListener('keyup', handleKeyUp);
 
 // Display diagnostics such as camera position/direction, ball position, etc.
-function updateDiagnosticsInfo(camera) {
+function updateDiagnosticsInfo(camera,) {
   // Camera position
   const pos = camera.position;
   // Camera facing direction (normalized vector)
@@ -122,11 +142,14 @@ function updateDiagnosticsInfo(camera) {
 }
 
 function update() {
+  const deltaTime = CLOCK.getDelta();
   // Update controls
   controls.enabled = isOrbitEnabled;
   controls.update();
+  // Update player controls
+  playerControls.update(deltaTime);
   // Update camera diagnostics
-  gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, isUIVisible, isDiagnosticsEnabled);
+  gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, isUIVisible, isDiagnosticsEnabled);
   gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled)
 }
 

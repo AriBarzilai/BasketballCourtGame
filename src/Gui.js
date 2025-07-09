@@ -125,19 +125,21 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
 }
 
 // Display diagnostics such as camera position/direction, ball position, etc.
-function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, isUIVisible, isDiagnosticsEnabled) {
+function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, basketball, isUIVisible, isDiagnosticsEnabled) {
     // Camera position
-    const pos = camera.position;
+    const cameraPos = camera.position;
     // Camera facing direction (normalized vector)
-    const target = new THREE.Vector3();
-    camera.getWorldDirection(target);
+    const cameraFacing = new THREE.Vector3();
+    const basketballPos = basketball.object.position;
+    camera.getWorldDirection(cameraFacing);
 
     // Format numbers to 2 decimals
     function fmt(v) { return v.toFixed(2); }
 
     diagnosticsInfoContainer.innerHTML =
-        `<b>Camera Position:</b> (${fmt(pos.x)}, ${fmt(pos.y)}, ${fmt(pos.z)})<br>` +
-        `<b>Camera Facing:</b> (${fmt(target.x)}, ${fmt(target.y)}, ${fmt(target.z)})`
+        `<b>Camera Position:</b> (${fmt(cameraPos.x)}, ${fmt(cameraPos.y)}, ${fmt(cameraPos.z)})<br>` +
+        `<b>Camera Facing:</b> (${fmt(cameraFacing.x)}, ${fmt(cameraFacing.y)}, ${fmt(cameraFacing.z)})<br>` +
+        `<b>Basketball Position:</b> (${fmt(basketballPos.x)}, ${fmt(basketballPos.y)}, ${fmt(basketballPos.z)})`
     diagnosticsInfoContainer.style.display =
         (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
 }
