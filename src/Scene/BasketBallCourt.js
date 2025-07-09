@@ -8,7 +8,7 @@ function BasketballCourt() {
     ///////////////////////
     const courtThickness = 0.2 // thickness of the court surface
     const courtGeometry = new THREE.BoxGeometry(94, courtThickness, 50);
-    const { width, height } = courtGeometry.parameters;
+    const { width, height, depth } = courtGeometry.parameters;
     let layer = 0
     let layerHeight = utils.getLayerHeight(height, layer)
 
@@ -70,13 +70,14 @@ function BasketballCourt() {
     courtSurrounding.position.set(0, -0.1 + layerHeight, 0)
     courtSurrounding.receiveShadow = true;
 
-
     court.add(courtSurrounding)
     court.add(createCourtLogo());
 
     return {
         object: court
         , baseHeight: baseFloorHeight
+        , width: width
+        , depth: depth
     }
 }
 
