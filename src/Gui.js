@@ -196,18 +196,18 @@ function addUIFrameworkStyles(document) {
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 20px;
+            padding: 12px;
             border-radius: 12px;
             border: 2px solid #444;
             backdrop-filter: blur(8px);
             pointer-events: auto;
-            min-width: 200px;
+            min-width: 150px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
         .score-title {
-            margin: 0 0 15px 0;
-            font-size: 1.4em;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
             color: #ff6b35;
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
@@ -238,7 +238,7 @@ function addUIFrameworkStyles(document) {
         }
         
         .score-value {
-            font-size: 1.8em;
+            font-size: 1.4em;
             font-weight: bold;
             color: #4CAF50;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
