@@ -3,12 +3,19 @@ function createScoreContainer(document) {
     container.id = 'score-container';
     container.className = 'score-container';
 
-    // Create score title
-    const scoreTitle = document.createElement('h2');
-    scoreTitle.textContent = 'Score Board';
-    scoreTitle.className = 'score-title';
+    // Create main title (spans across the top)
+    const mainTitle = document.createElement('h2');
+    mainTitle.textContent = 'Game Dashboard';
+    mainTitle.className = 'main-title';
 
-    // Create score display area
+    // Create the content area
+    const horizontalContent = document.createElement('div');
+    horizontalContent.className = 'horizontal-content';
+
+    // LEFT SIDE: Score section
+    const scoreSection = document.createElement('div');
+    scoreSection.className = 'score-section';
+    
     const scoreDisplay = document.createElement('div');
     scoreDisplay.id = 'score-display';
     scoreDisplay.className = 'score-display';
@@ -24,10 +31,67 @@ function createScoreContainer(document) {
         </div>
     `;
 
-    container.appendChild(scoreTitle);
-    container.appendChild(scoreDisplay);
+    // RIGHT SIDE: Statistics section
+    const statisticsSection = document.createElement('div');
+    statisticsSection.id = 'statistics-section';
+    statisticsSection.className = 'statistics-section';
+    
+    const statisticsDisplay = document.createElement('div');
+    statisticsDisplay.id = 'statistics-display';
+    statisticsDisplay.className = 'statistics-display';
+    statisticsDisplay.innerHTML = `
+        <div class="stat-row">
+            <div class="stat-item compact">
+                <span class="stat-label">Score:</span>
+                <span class="stat-value" id="total-score">0</span>
+            </div>
+            <div class="stat-item compact">
+                <span class="stat-label">Attempts:</span>
+                <span class="stat-value" id="shot-attempts">0</span>
+            </div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-item compact">
+                <span class="stat-label">Made:</span>
+                <span class="stat-value" id="shots-made">0</span>
+            </div>
+            <div class="stat-item compact">
+                <span class="stat-label">Accuracy:</span>
+                <span class="stat-value" id="shooting-percentage">0%</span>
+            </div>
+        </div>
+    `;
+
+    // Assemble the sections
+    scoreSection.appendChild(scoreDisplay);
+    statisticsSection.appendChild(statisticsDisplay);
+    
+    horizontalContent.appendChild(scoreSection);
+    horizontalContent.appendChild(statisticsSection);
+    
+    container.appendChild(mainTitle);
+    container.appendChild(horizontalContent);
 
     return container;
+}
+
+function updateStatistics(totalScore, shotAttempts, shotsMade) {
+    // Update the DOM elements
+    document.getElementById('total-score').textContent = totalScore;
+    document.getElementById('shot-attempts').textContent = shotAttempts;
+    document.getElementById('shots-made').textContent = shotsMade;
+    
+    // Calculate and update shooting percentage
+    let shootingPercentage = 0;
+    if (shotAttempts > 0) {
+        shootingPercentage = Math.round((shotsMade / shotAttempts) * 100);
+    }
+    document.getElementById('shooting-percentage').textContent = `${shootingPercentage}%`;
+}
+
+// Reset statistics
+function resetStatistics() {
+    updateStatistics(0, 0, 0);
 }
 
 function createEnhancedControlsContainer(document) {
@@ -171,7 +235,6 @@ function createCompleteUIFramework(document) {
 }
 
 
-// Add comprehensive CSS styles for the UI framework
 function addUIFrameworkStyles(document) {
     const style = document.createElement('style');
     style.id = 'hw05-ui-styles';
@@ -188,75 +251,138 @@ function addUIFrameworkStyles(document) {
             font-family: 'Arial', sans-serif;
         }
         
-        /* Score Container Styles */
+        /* NEW HORIZONTAL SCORE CONTAINER */
         .score-container {
-            position: absolute;
-            top: 20px;
+            position: fixed;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 8px 16px;
+            border-radius: 8px;
             border: 2px solid #444;
             backdrop-filter: blur(8px);
             pointer-events: auto;
-            min-width: 150px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            /* Make it wide but short */
+            min-width: 500px;
+            max-width: 700px;
+            height: auto;
         }
-        
-        .score-title {
-            margin: 0 0 10px 0;
-            font-size: 1.1em;
+
+        /* Main title across the top */
+        .main-title {
+            margin: 0 0 8px 0;
+            font-size: 0.9em;
             color: #ff6b35;
             text-align: center;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
             border-bottom: 1px solid #444;
-            padding-bottom: 8px;
+            padding-bottom: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
-        .score-display {
+
+        /* Horizontal content container */
+        .horizontal-content {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+            align-items: flex-start;
+            gap: 20px;
         }
-        
+
+        /* LEFT SIDE: Score Section */
+        .score-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
         .team-score {
             display: flex;
             flex-direction: column;
             align-items: center;
-            flex: 1;
         }
-        
+
         .team-name {
-            font-size: 0.85em;
-            margin-bottom: 4px;
+            font-size: 0.65em;
+            margin-bottom: 2px;
             color: #bbb;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
         .score-value {
             font-size: 1.4em;
             font-weight: bold;
             color: #4CAF50;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
-        
+
         .score-separator {
-            font-size: 1.5em;
+            font-size: 1.2em;
             font-weight: bold;
-            margin: 0 15px;
             color: #666;
         }
-        
-        .score-note {
-            font-size: 0.75em;
-            color: #888;
-            text-align: center;
-            margin: 8px 0 0 0;
-            font-style: italic;
+
+        /* RIGHT SIDE: Statistics Section */
+        .statistics-section {
+            flex: 1;
+            border-left: 1px solid #444;
+            padding-left: 20px;
+        }
+
+        .statistics-display {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Statistics in 2x2 grid format */
+        .stat-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-item.compact {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            border-left: 2px solid #4CAF50;
+            min-width: 80px;
+        }
+
+        .stat-label {
+            font-size: 0.65em;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 0.7em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        /* Special styling for accuracy percentage */
+        .stat-item.compact:last-child .stat-value {
+            color: #ff9800;
         }
         
         /* Enhanced Controls Container */
@@ -363,11 +489,24 @@ function addUIFrameworkStyles(document) {
         /* Responsive Design */
         @media (max-width: 768px) {
             .score-container {
-                top: 10px;
                 left: 10px;
                 right: 10px;
                 transform: none;
                 min-width: auto;
+                max-width: none;
+                padding: 6px 12px;
+            }
+            
+            .horizontal-content {
+                gap: 15px;
+            }
+            
+            .statistics-section {
+                padding-left: 15px;
+            }
+            
+            .main-title {
+                font-size: 0.8em;
             }
             
             .enhanced-controls-container {
@@ -375,6 +514,24 @@ function addUIFrameworkStyles(document) {
                 left: 10px;
                 right: 10px;
                 max-width: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .horizontal-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .statistics-section {
+                border-left: none;
+                border-top: 1px solid #444;
+                padding-left: 0;
+                padding-top: 8px;
+            }
+            
+            .score-container {
+                min-width: auto;
             }
         }
         
@@ -394,4 +551,6 @@ export {
     createCompleteUIFramework,
     updateEnhancedControlsDisplay,
     updateDiagnosticsInfo,
+    updateStatistics,
+    resetStatistics  
 }
