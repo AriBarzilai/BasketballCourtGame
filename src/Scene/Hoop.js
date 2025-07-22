@@ -22,8 +22,8 @@ function BasketballHoops() {
     hoopsGroup.add(rightHoop);
 
     return {
-        object: hoopsGroup,
-        baseHeight: 0
+        leftHoop: leftHoop,
+        rightHoop: rightHoop,
     };
 }
 
@@ -49,6 +49,7 @@ function createBasketballPole() {
     pole.position.set(0, POLE_HEIGHT / 2, -2);
     pole.castShadow = true;
     pole.receiveShadow = true;
+    pole.name = 'pole';
     return pole;
 }
 
@@ -59,6 +60,7 @@ function createSupportArm() {
 
     arm.position.set(0, HOOP_HEIGHT - 0.5, -1);
     arm.castShadow = true;
+    arm.name = 'arm';
     return arm;
 }
 
@@ -143,7 +145,7 @@ function createBasketballBoard() {
         child.castShadow = true;
         child.receiveShadow = true;
     });
-
+    boardGroup.name = 'board';
     return boardGroup;
 }
 
@@ -198,16 +200,16 @@ function createBasketballNet(rimY, rimZ) {
         new THREE.Float32BufferAttribute(positions, 3)
     );
 
-    const lines = new THREE.LineSegments(
+    const basketballNet = new THREE.LineSegments(
         diagGeom,
         new THREE.LineBasicMaterial({ color: utils.COLORS.WHITE })
     );
 
     /* 5 ─ hang the net so its *top edge* kisses the rim’s underside  */
-    lines.position.set(0, rimY - hNet / 2, rimZ);
-    lines.castShadow = true
-
-    return lines;
+    basketballNet.position.set(0, rimY - hNet / 2, rimZ);
+    basketballNet.castShadow = true
+    basketballNet.name = 'basketballNet';
+    return basketballNet;
 }
 
 function createBasketballRim() {
@@ -229,6 +231,7 @@ function createBasketballRim() {
     const connectorZ = backboardThickness / 2;
 
     connector.position.set(connectorZ, connectorY, 0);
+    connector.name = 'connector';
 
     const rimY = connectorY;
     const rimZ = 0.11 + RIM_RADIUS;
@@ -238,10 +241,12 @@ function createBasketballRim() {
     rim.position.set(0, rimY, rimZ);
     rim.rotation.x = Math.PI / 2;
     rim.castShadow = true;
+    rim.name = 'rim';
 
     rimGroup.add(connector);
     rimGroup.add(rim);
     rimGroup.add(net);
+    rimGroup.name = 'hoop'
     return rimGroup;
 }
 

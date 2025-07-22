@@ -1,7 +1,9 @@
 class PlayerControls {
-    constructor(basketballCourt, basketballData, speed = 20) {
+    constructor(basketballCourt, basketballData, hoopData, playerDirArrow, speed = 20) {
         this.basketballCourt = basketballCourt
         this.basketballData = basketballData;
+        this.dirArrow = playerDirArrow; // VFX used to indicate direction and force of throw
+        this.hoopData = hoopData
         this.speed = speed;
         this.keyStates = {
             ArrowUp: false,
@@ -9,6 +11,8 @@ class PlayerControls {
             ArrowDown: false,
             ArrowRight: false,
         };
+
+        this.dirArrow
     }
 
     update(deltaTime) {
@@ -31,6 +35,25 @@ class PlayerControls {
         moveBy.normalize().multiplyScalar(deltaTime * this.speed);
         // out of bounds check
         this.basketballData.object.position.add(moveBy);
+        this.dirArrow.position.add(moveBy);
+
+        this.dirArrow.setDirection(this.get_dir_to_hoop())
+    }
+
+    get_dir_to_hoop() {
+        let curr_hoop = null
+        // determines which half of the basketball court the basketball is in.
+        curr_hoop = this.basketballData.object.position.x >= 0 ? this.hoopData.rightHoop : this.hoopData.leftHoop;
+        const hoopWorldPos = new THREE.Vector3();
+        curr_hoop.getObjectByName('hoop').getWorldPosition(hoopWorldPos);
+
+        const ballWorldPos = new THREE.Vector3();
+        this.basketballData.object.getWorldPosition(ballWorldPos);
+
+        const direction = new THREE.Vector3();
+        direction.subVectors(hoopWorldPos, ballWorldPos).normalize;
+        direction.normalize()
+        return direction
     }
 }
 

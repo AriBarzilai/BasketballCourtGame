@@ -5,6 +5,7 @@ import { BasketballCourt } from './Scene/BasketBallCourt.js'
 import { Basketball } from './Scene/Basketball.js';
 import { BasketballHoops } from './Scene/Hoop.js';
 import PlayerControls from './PlayerControls.js'
+import { initPlayerDirectionArrow } from './Scene/playerVFX.js';
 
 const CLOCK = new THREE.Clock()
 
@@ -14,6 +15,11 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+///////////////////////////////////
+// SCENE OBJECTS
+///////////////////////////////////
+
 // Set background color
 scene.background = new THREE.Color(utils.COLORS.BLACK);
 
@@ -47,12 +53,21 @@ basketballData.object.position.y = courtData.baseHeight + basketballData.baseHei
 basketballData.object.position.x = 0;
 scene.add(basketballData.object);
 
-// Add player controls for basketball
-const playerControls = new PlayerControls(courtData, basketballData);
-
 const hoopData = BasketballHoops();
-hoopData.object.position.y = courtData.baseHeight;
-scene.add(hoopData.object);
+hoopData.leftHoop.position.y = courtData.baseHeight;
+scene.add(hoopData.leftHoop);
+hoopData.rightHoop.position.y = courtData.baseHeight;
+scene.add(hoopData.rightHoop);
+
+const playerDirArrow = initPlayerDirectionArrow(basketballData)
+scene.add(playerDirArrow)
+
+///////////////////////////////////////////////
+// CAMERA / CONTROLS / UI
+///////////////////////////////////////////////
+
+// Add player controls for basketball
+const playerControls = new PlayerControls(courtData, basketballData, hoopData, playerDirArrow);
 
 // Set camera position for better view
 const cameraTranslate = new THREE.Matrix4();
