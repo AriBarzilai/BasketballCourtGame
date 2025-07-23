@@ -62,6 +62,7 @@ class PlayerControls {
     }
 
     launchBall() {
+        if (this.moveStates.throwedBall) return;
         console.log("BALL THROWN");
         this.moveStates = {
             moveUp: false,
@@ -104,10 +105,6 @@ class PlayerControls {
 
         // Optional: reset direction arrow's direction
         this.dirArrow.setDirection(this.getDirToHoop());
-    }
-
-    increasePower() {
-
     }
 }
 
