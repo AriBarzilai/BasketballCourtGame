@@ -125,9 +125,20 @@ function handleKeyDown(e) {
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
     playerControls.moveStates[e.key] = true;
   }
-  if ([' '].includes(e.key)) {
+
+  if (key === ' ') {
     playerControls.launchBall();
   }
+
+  if (key === 'r') {
+    playerControls.resetBall()
+  }
+
+  // if (key === 'w') {
+  //   playerControls.increasePower()
+  // } else if (key == 's') {
+  //   playerControls.decreasePower()
+  // }
 }
 
 function handleKeyUp(e) {

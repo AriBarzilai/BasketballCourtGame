@@ -12,11 +12,14 @@ class PlayerControls {
             ArrowDown: false,
             ArrowRight: false,
             throwedBall: false,
+            w: false,
+            s: false,
         }
 
-        this.GRAVITY = -9.8 * 0.5 // gravity but scaled
+        this.GRAVITY = -19.6 // gravity but scaled
         this.FRICTION_COEFF = 0.99
         this.currVelocity = new THREE.Vector3();
+        this.dirArrow.setDirection(this.getDirToHoop());
     }
 
     update(deltaTime) {
@@ -51,7 +54,11 @@ class PlayerControls {
         this.basketballData.object.position.add(moveBy);
         this.dirArrow.position.add(moveBy);
 
-        this.dirArrow.setDirection(this.get_dir_to_hoop())
+        this.dirArrow.setDirection(this.getDirToHoop())
+
+        if (this.basketballData.object.position.y < 0) {
+            this.resetBall();
+        }
     }
 
     launchBall() {
@@ -63,10 +70,11 @@ class PlayerControls {
             moveRight: false,
             throwedBall: true
         };
-        this.currVelocity.copy(this.get_dir_to_hoop().clone().multiplyScalar(this.throwForce));
+        this.currVelocity.copy(this.getDirToHoop().clone().multiplyScalar(this.throwForce));
+        this.dirArrow.visible = false;
     }
 
-    get_dir_to_hoop() {
+    getDirToHoop() {
         let curr_hoop = null
         // determines which half of the basketball court the basketball is in.
         curr_hoop = this.basketballData.object.position.x >= 0 ? this.hoopData.rightHoop : this.hoopData.leftHoop;
@@ -79,7 +87,27 @@ class PlayerControls {
         const direction = new THREE.Vector3();
         direction.subVectors(hoopWorldPos, ballWorldPos).normalize();
         return direction;
-        return direction
+    }
+
+    resetBall() {
+        this.moveStates = {
+            ArrowUp: false,
+            ArrowLeft: false,
+            ArrowDown: false,
+            ArrowRight: false,
+            throwedBall: false,
+        }
+        this.basketballData.object.position.set(0, this.basketballData.baseHeight + this.basketballCourt.baseHeight, 0)
+        this.currVelocity.set(0, 0, 0)
+        this.dirArrow.position.copy(this.basketballData.object.position);
+        this.dirArrow.visible = true;
+
+        // Optional: reset direction arrow's direction
+        this.dirArrow.setDirection(this.getDirToHoop());
+    }
+
+    increasePower() {
+
     }
 }
 
