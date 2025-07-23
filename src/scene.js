@@ -134,17 +134,24 @@ function handleKeyDown(e) {
     playerControls.resetBall()
   }
 
-  // if (key === 'w') {
-  //   playerControls.increasePower()
-  // } else if (key == 's') {
-  //   playerControls.decreasePower()
-  // }
+  if (key === 'w') {
+    playerControls.moveStates.increasePower = true;
+    playerControls.moveStates.decreasePower = false;
+  } else if (key == 's') {
+    playerControls.moveStates.decreasePower = true;
+    playerControls.moveStates.increasePower = false;
+  }
 }
 
 function handleKeyUp(e) {
   const key = e.key.toLowerCase();
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
     playerControls.moveStates[e.key] = false;
+  }
+  if (key === 'w') {
+    playerControls.moveStates.increasePower = false;
+  } else if (key == 's') {
+    playerControls.moveStates.decreasePower = false;
   }
 }
 

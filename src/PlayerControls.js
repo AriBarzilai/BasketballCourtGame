@@ -5,21 +5,26 @@ class PlayerControls {
         this.dirArrow = playerDirArrow; // VFX used to indicate direction and force of throw
         this.hoopData = hoopData
         this.controlMoveSpeed = controlMoveSpeed;
-        this.throwForce = 50;
+        this.throwForce = 43;
         this.moveStates = {
             ArrowUp: false,
             ArrowLeft: false,
             ArrowDown: false,
             ArrowRight: false,
             throwedBall: false,
-            w: false,
-            s: false,
+            increasePower: false,
+            decreasePower: false,
         }
 
         this.GRAVITY = -19.6 // gravity but scaled
         this.FRICTION_COEFF = 0.99
         this.currVelocity = new THREE.Vector3();
-        this.dirArrow.setDirection(this.getDirToHoop());
+
+        this.pitch = 0;
+        this.pitchSpeed = Math.PI / 3
+        this.throwExtraForce = 25; // multiplied by (pitch / (Math.PI / 2)) - steeper angle increases force of throw
+
+        this.dirArrow.setDirection(this.computeAimedDirection());
     }
 
     update(deltaTime) {
@@ -45,8 +50,12 @@ class PlayerControls {
             if (this.moveStates.ArrowRight) {
                 if (moveBy.z + this.basketballData.object.position.z < this.basketballCourt.depth / 2 - this.basketballData.baseHeight) moveBy.z += 1;
             }
+            console.log(this.moveStates)
+            if (this.moveStates.increasePower) this.pitch += this.pitchSpeed * deltaTime;
+            if (this.moveStates.decreasePower) this.pitch -= this.pitchSpeed * deltaTime;
+            this.pitch = THREE.MathUtils.clamp(this.pitch, 0, Math.PI / 2);
         }
-        if (moveBy.lengthSq() <= 0) return;
+        if (moveBy.lengthSq() <= 0 && !(this.moveStates.increasePower || this.moveStates.decreasePower || this.throwedBall)) return;
         if (!this.moveStates.throwedBall) {
             moveBy.normalize().multiplyScalar(deltaTime * this.controlMoveSpeed);
         }
@@ -54,9 +63,9 @@ class PlayerControls {
         this.basketballData.object.position.add(moveBy);
         this.dirArrow.position.add(moveBy);
 
-        this.dirArrow.setDirection(this.getDirToHoop())
+        this.dirArrow.setDirection(this.computeAimedDirection())
 
-        if (this.basketballData.object.position.y < 0) {
+        if (this.basketballData.object.position.y < -5) {
             this.resetBall();
         }
     }
@@ -69,9 +78,11 @@ class PlayerControls {
             moveLeft: false,
             moveDown: false,
             moveRight: false,
+            increasePower: false,
+            decreasePower: false,
             throwedBall: true
         };
-        this.currVelocity.copy(this.getDirToHoop().clone().multiplyScalar(this.throwForce));
+        this.currVelocity.copy(this.computeAimedDirection().clone().multiplyScalar(this.throwForce + this.throwExtraForce * (this.pitch / (Math.PI) / 2)));
         this.dirArrow.visible = false;
     }
 
@@ -86,11 +97,29 @@ class PlayerControls {
         this.basketballData.object.getWorldPosition(ballWorldPos);
 
         const direction = new THREE.Vector3();
-        direction.subVectors(hoopWorldPos, ballWorldPos).normalize();
+        direction.subVectors(hoopWorldPos, ballWorldPos)
+        direction.y = this.basketballData.object.position.y + this.basketballCourt.baseHeight
+        direction.normalize();
         return direction;
     }
 
+    computeAimedDirection() { // takes into accout both direction of hoop and pitch of throw
+        // base horizontal dir to hoop
+        const flat = this.getDirToHoop().clone();
+        console.log(flat)
+        flat.y = 0;
+        flat.normalize();
+
+        const aimed = flat.clone();
+        aimed.y = Math.tan(this.pitch);
+        aimed.normalize();
+        console.log(this.pitch)
+        console.log(aimed)
+        return aimed;
+    }
+
     resetBall() {
+        console.log('BALL RESET')
         this.moveStates = {
             ArrowUp: false,
             ArrowLeft: false,
@@ -104,7 +133,8 @@ class PlayerControls {
         this.dirArrow.visible = true;
 
         // Optional: reset direction arrow's direction
-        this.dirArrow.setDirection(this.getDirToHoop());
+        this.dirArrow.setDirection(this.computeAimedDirection());
+        // this.dirArrow.setDirection(this.computeAimedDirection());
     }
 }
 
