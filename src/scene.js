@@ -37,10 +37,10 @@ renderer.shadowMap.enabled = true;
 directionalLight.shadow.mapSize.width = 2048;
 directionalLight.shadow.mapSize.height = 2048;
 directionalLight.castShadow = true;
-directionalLight.shadow.camera.top = 50;
-directionalLight.shadow.camera.bottom = -50;
-directionalLight.shadow.camera.left = -50;
-directionalLight.shadow.camera.right = 50;
+directionalLight.shadow.camera.top = 100;
+directionalLight.shadow.camera.bottom = -100;
+directionalLight.shadow.camera.left = -100;
+directionalLight.shadow.camera.right = 100;
 directionalLight.shadow.camera.far = 100;
 
 
@@ -123,14 +123,17 @@ function handleKeyDown(e) {
   }
 
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
-    playerControls.keyStates[e.key] = true;
+    playerControls.moveStates[e.key] = true;
+  }
+  if ([' '].includes(e.key)) {
+    playerControls.launchBall();
   }
 }
 
 function handleKeyUp(e) {
   const key = e.key.toLowerCase();
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
-    playerControls.keyStates[e.key] = false;
+    playerControls.moveStates[e.key] = false;
   }
 }
 
@@ -185,4 +188,5 @@ function handleResize() {
 window.addEventListener('resize', handleResize);
 
 // Start the application
+console.log("GAME START")
 draw();
