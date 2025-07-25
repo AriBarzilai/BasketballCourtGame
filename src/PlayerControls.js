@@ -20,6 +20,12 @@ class PlayerControls {
 
         this.GRAVITY = -19.6 // gravity but scaled
         this.FRICTION_COEFF = 0.99
+
+        this.BOUNCE_DAMPING = 0.7;        // How much energy is lost on each bounce (0.7 = loses 30%)
+        this.MIN_BOUNCE_VELOCITY = 2;     // Minimum upward velocity to continue bouncing
+        this.GROUND_FRICTION = 0.95;      // Friction when ball rolls on ground
+        this.bounceCount = 0;   // Count how many times the ball has bounced
+
         this.currVelocity = new THREE.Vector3();
 
         this.pitch = 0;
@@ -28,49 +34,6 @@ class PlayerControls {
 
         this.dirArrow.setDirection(this.computeAimedDirection());
     }
-
-    // update(deltaTime) {
-    //     let moveBy;
-    //     if (this.moveStates.throwedBall) { // if object is in throwing  mode
-    //         moveBy = this.currVelocity.clone()
-    //         moveBy.multiplyScalar(deltaTime)
-    //         this.currVelocity.y += this.GRAVITY * deltaTime
-    //         this.currVelocity.multiplyScalar(this.FRICTION_COEFF)
-    //     } else { // else if object is in playerControl mode
-    //         moveBy = new THREE.Vector3();
-    //         // Forward/backward (z axis)
-    //         if (this.moveStates.ArrowUp) {
-    //             if (moveBy.x + this.basketballData.object.position.x < this.basketballCourt.width / 2 - this.basketballData.baseHeight) moveBy.x += 1;
-    //         }
-    //         if (this.moveStates.ArrowDown) {
-    //             if (moveBy.x + this.basketballData.object.position.x > -1 * (this.basketballCourt.width / 2 - this.basketballData.baseHeight)) moveBy.x -= 1;
-    //         }
-    //         // Left/right (x axis)
-    //         if (this.moveStates.ArrowLeft) {
-    //             if (moveBy.z + this.basketballData.object.position.z > -1 * (this.basketballCourt.depth / 2 - this.basketballData.baseHeight)) moveBy.z -= 1;
-    //         }
-    //         if (this.moveStates.ArrowRight) {
-    //             if (moveBy.z + this.basketballData.object.position.z < this.basketballCourt.depth / 2 - this.basketballData.baseHeight) moveBy.z += 1;
-    //         }
-    //         console.log(this.moveStates)
-    //         if (this.moveStates.increasePower) this.pitch += this.pitchSpeed * deltaTime;
-    //         if (this.moveStates.decreasePower) this.pitch -= this.pitchSpeed * deltaTime;
-    //         this.pitch = THREE.MathUtils.clamp(this.pitch, 0, Math.PI / 2);
-    //     }
-    //     if (moveBy.lengthSq() <= 0 && !(this.moveStates.increasePower || this.moveStates.decreasePower || this.throwedBall)) return;
-    //     if (!this.moveStates.throwedBall) {
-    //         moveBy.normalize().multiplyScalar(deltaTime * this.controlMoveSpeed);
-    //     }
-    //     // out of bounds check
-    //     this.basketballData.object.position.add(moveBy);
-    //     this.dirArrow.position.add(moveBy);
-
-    //     this.dirArrow.setDirection(this.computeAimedDirection())
-
-    //     if (this.basketballData.object.position.y < -5) {
-    //         this.resetBall();
-    //     }
-    // }
 
     update(deltaTime) {
         let moveBy = new THREE.Vector3();
@@ -148,37 +111,21 @@ class PlayerControls {
         }
     }
 
-    // launchBall() {
-    //     if (this.moveStates.throwedBall) return;
-    //     console.log("BALL THROWN");
-    //     this.moveStates = {
-    //         moveUp: false,
-    //         moveLeft: false,
-    //         moveDown: false,
-    //         moveRight: false,
-    //         increasePower: false,
-    //         decreasePower: false,
-    //         throwedBall: true
-    //     };
-    //     this.basketballTrail.startTrail();
-    //     this.currVelocity.copy(this.computeAimedDirection().clone().multiplyScalar(this.throwForce + this.throwExtraForce * (this.pitch / (Math.PI) / 2)));
-    //     this.dirArrow.visible = false;
-    // }
     launchBall() {
         if (this.moveStates.throwedBall) return;
         console.log("BALL THROWN");
         
         // ✅ FIXED: Use correct property names
         this.moveStates = {
-            ArrowUp: false,       // ✅ Correct arrow key names
-            ArrowLeft: false,     // ✅ Correct arrow key names
-            ArrowDown: false,     // ✅ Correct arrow key names
-            ArrowRight: false,    // ✅ Correct arrow key names
+            ArrowUp: false,
+            ArrowLeft: false,
+            ArrowDown: false,
+            ArrowRight: false,
             increasePower: false,
             decreasePower: false,
             throwedBall: true
         };
-        
+        this.bounceCount = 0; // Reset bounce counter
         // Calculate throw direction and velocity
         const throwDirection = this.computeAimedDirection().clone();
         const totalThrowForce = this.throwForce + this.throwExtraForce * (this.pitch / (Math.PI / 2));
@@ -247,6 +194,7 @@ class PlayerControls {
         this.currVelocity.set(0, 0, 0)
         this.dirArrow.position.copy(this.basketballData.object.position);
         this.dirArrow.visible = true;
+        this.bounceCount = 0; // Reset bounce counter
 
         // Optional: reset direction arrow's direction
         this.dirArrow.setDirection(this.computeAimedDirection());
@@ -257,31 +205,87 @@ class PlayerControls {
         }
     }
 
+    // handleBallLanding() {
+    //     console.log("Ball landed - Stopping trail");
+        
+    //     // Stop ball movement
+    //     this.currVelocity.set(0, 0, 0);
+        
+    //     // Position ball on ground
+    //     this.basketballData.object.position.y = this.basketballData.baseHeight + this.basketballCourt.baseHeight;
+        
+    //     // STOP TRAIL EFFECT - Ball has landed
+    //     this.basketballTrail.stopTrail();
+        
+    //     // Set ball back to player control after a short delay
+    //     setTimeout(() => {
+    //         this.moveStates.throwedBall = false;
+    //         this.dirArrow.visible = true;
+    //         this.dirArrow.position.copy(this.basketballData.object.position);
+    //         this.dirArrow.setDirection(this.computeAimedDirection());
+    //     }, 500); // Half second delay before player can control again
+        
+    //     // Play landing sound
+    //     if (this.audioManager) {
+    //         this.audioManager.playBallBounce();
+    //     }
+    // }
     handleBallLanding() {
-        console.log("Ball landed - Stopping trail");
+        const groundLevel = this.basketballData.baseHeight + this.basketballCourt.baseHeight;
         
-        // Stop ball movement
+        // Ensure ball is exactly at ground level
+        this.basketballData.object.position.y = groundLevel;
+        
+        // Get the bounce velocity (absolute value of downward velocity)
+        const bounceVelocity = Math.abs(this.currVelocity.y);
+        
+        // ✅ BOUNCING PHYSICS: Check if ball should bounce
+        if (bounceVelocity > this.MIN_BOUNCE_VELOCITY && this.bounceCount < 5) {
+            console.log(`Ball bounced! Bounce #${this.bounceCount + 1}, velocity: ${bounceVelocity.toFixed(2)}`);
+            
+            // Reverse Y velocity and apply damping (bounce up)
+            this.currVelocity.y = bounceVelocity * this.BOUNCE_DAMPING;
+            
+            // Apply ground friction to horizontal movement
+            this.currVelocity.x *= this.GROUND_FRICTION;
+            this.currVelocity.z *= this.GROUND_FRICTION;
+            
+            // Increment bounce counter
+            this.bounceCount++;
+            
+            // Play bounce sound
+            if (this.audioManager) {
+                this.audioManager.playBallBounce();
+            }
+            
+            // Ball continues flying - don't stop the trail
+            return; // ✅ IMPORTANT: Return here to keep ball in "thrown" state
+        }
+        
+        // ✅ BALL STOPS BOUNCING - Original landing logic
+        console.log("Ball stopped bouncing - Coming to rest");
+        
+        // Stop all movement
         this.currVelocity.set(0, 0, 0);
+        this.bounceCount = 0; // Reset bounce counter
         
-        // Position ball on ground
-        this.basketballData.object.position.y = this.basketballData.baseHeight + this.basketballCourt.baseHeight;
-        
-        // STOP TRAIL EFFECT - Ball has landed
+        // Stop trail effect
         this.basketballTrail.stopTrail();
         
-        // Set ball back to player control after a short delay
+        // Return ball to player control after delay
         setTimeout(() => {
             this.moveStates.throwedBall = false;
             this.dirArrow.visible = true;
             this.dirArrow.position.copy(this.basketballData.object.position);
             this.dirArrow.setDirection(this.computeAimedDirection());
-        }, 500); // Half second delay before player can control again
+        }, 500);
         
-        // Play landing sound
+        // Play final landing sound
         if (this.audioManager) {
             this.audioManager.playBallBounce();
         }
     }
+
 }
 
 export default PlayerControls;
