@@ -7,7 +7,7 @@ class PlayerControls {
         this.audioManager = audioManager; // AudioManager instance for sound effects
         this.basketballTrail = basketballTrail;
         this.controlMoveSpeed = controlMoveSpeed;
-        this.throwForce = 43;
+        this.throwForce = 20;
         this.moveStates = {
             ArrowUp: false,
             ArrowLeft: false,
@@ -30,7 +30,7 @@ class PlayerControls {
 
         this.pitch = 0;
         this.pitchSpeed = Math.PI / 3
-        this.throwExtraForce = 25; // multiplied by (pitch / (Math.PI / 2)) - steeper angle increases force of throw
+        this.throwExtraForce = 10; // multiplied by (pitch / (Math.PI / 2)) - steeper angle increases force of throw
 
         this.dirArrow.setDirection(this.computeAimedDirection());
     }
@@ -45,6 +45,22 @@ class PlayerControls {
             this.currVelocity.y += this.GRAVITY * deltaTime;
             this.currVelocity.multiplyScalar(this.FRICTION_COEFF);
             
+            const ballPos = this.basketballData.object.position;
+            const courtHalfWidth = this.basketballCourt.width / 2;
+            const courtHalfDepth = this.basketballCourt.depth / 2;
+            
+            // Check if ball will go out of bounds after this movement
+            const nextPos = ballPos.clone().add(moveBy);
+            if (nextPos.x > courtHalfWidth || nextPos.x < -courtHalfWidth || 
+                nextPos.z > courtHalfDepth || nextPos.z < -courtHalfDepth) {
+                console.log("Ball went out of bounds - resetting to center court");
+                this.resetBall();
+                return;
+            }
+            
+            // Apply movement if still in bounds
+            this.basketballData.object.position.add(moveBy);
+
             // Check if ball has hit the ground ONLY when ball is thrown AND falling
             const groundLevel = this.basketballData.baseHeight + this.basketballCourt.baseHeight;
             if (this.basketballData.object.position.y <= groundLevel && this.currVelocity.y <= 0) {
@@ -91,6 +107,11 @@ class PlayerControls {
             // Scale movement for player control
             if (moveBy.lengthSq() > 0) {
                 moveBy.normalize().multiplyScalar(deltaTime * this.controlMoveSpeed);
+            }
+
+            // Safety check - reset if ball falls below court
+            if (this.basketballData.object.position.y < -5) {
+                this.resetBall();
             }
         }
         
@@ -205,31 +226,6 @@ class PlayerControls {
         }
     }
 
-    // handleBallLanding() {
-    //     console.log("Ball landed - Stopping trail");
-        
-    //     // Stop ball movement
-    //     this.currVelocity.set(0, 0, 0);
-        
-    //     // Position ball on ground
-    //     this.basketballData.object.position.y = this.basketballData.baseHeight + this.basketballCourt.baseHeight;
-        
-    //     // STOP TRAIL EFFECT - Ball has landed
-    //     this.basketballTrail.stopTrail();
-        
-    //     // Set ball back to player control after a short delay
-    //     setTimeout(() => {
-    //         this.moveStates.throwedBall = false;
-    //         this.dirArrow.visible = true;
-    //         this.dirArrow.position.copy(this.basketballData.object.position);
-    //         this.dirArrow.setDirection(this.computeAimedDirection());
-    //     }, 500); // Half second delay before player can control again
-        
-    //     // Play landing sound
-    //     if (this.audioManager) {
-    //         this.audioManager.playBallBounce();
-    //     }
-    // }
     handleBallLanding() {
         const groundLevel = this.basketballData.baseHeight + this.basketballCourt.baseHeight;
         
