@@ -1,10 +1,12 @@
 class PlayerControls {
-    constructor(basketballCourt, basketballData, hoopData, playerDirArrow, controlMoveSpeed = 20) {
+    constructor(basketballCourt, basketballData, hoopData, playerDirArrow, audioManager, basketballTrail, controlMoveSpeed = 20) {
         this.basketballCourt = basketballCourt
         this.basketballData = basketballData;
         this.dirArrow = playerDirArrow; // VFX used to indicate direction and force of throw
         this.hoopData = hoopData
         this.controlMoveSpeed = controlMoveSpeed;
+        this.audioManager = audioManager; // AudioManager instance for sound effects
+        this.basketballTrail = basketballTrail;
         this.moveStates = {
             ArrowUp: false,
             ArrowLeft: false,
@@ -104,6 +106,9 @@ class PlayerControls {
         };
         this.currVelocity.copy(this.computeAimedDirection().clone().multiplyScalar(this.throwForce + this.throwExtraForce * (this.pitch / (Math.PI) / 2)));
         this.dirArrow.visible = false;
+        if (this.currVelocity.y > 0) {
+            this.basketballTrail.startTrail();
+        }
     }
 
     getDirToHoop() {
@@ -156,13 +161,14 @@ class PlayerControls {
                 // big enough hit → bounce
                 vel.y = -vel.y * this.RESTITUTION;
             } else {
+                // Stop trail effect
+                this.basketballTrail.stopTrail();
+
                 // too small → stick to floor, start rolling / stopping
                 vel.y = 0;
-
                 // extra damping to make it gently roll/stop
                 vel.x *= this.ROLL_DAMP;
                 vel.z *= this.ROLL_DAMP;
-
                 // If we've basically stopped, sleep it
                 if (vel.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED) {
                     vel.set(0, 0, 0);
@@ -170,15 +176,6 @@ class PlayerControls {
                 }
             }
         }
-
-
-        // ── SIDELINES (X) ────────────────────────────────────────
-        if (pos.x > halfW) { pos.x = halfW; vel.x = -vel.x * this.RESTITUTION; }
-        if (pos.x < -halfW) { pos.x = -halfW; vel.x = -vel.x * this.RESTITUTION; }
-
-        // ── BASELINES (Z) ────────────────────────────────────────
-        if (pos.z > halfD) { pos.z = halfD; vel.z = -vel.z * this.RESTITUTION; }
-        if (pos.z < -halfD) { pos.z = -halfD; vel.z = -vel.z * this.RESTITUTION; }
 
         // kill negligible bounce so ball finally rests
         if (Math.abs(vel.y) < 0.2) vel.y = 0;
