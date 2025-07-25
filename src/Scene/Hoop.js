@@ -12,11 +12,13 @@ function BasketballHoops() {
     const leftHoop = createSingleHoop();
     leftHoop.position.set(-45, 0, 0);
     leftHoop.rotation.y = Math.PI / 2;
+    leftHoop.collidableParts = getCollidableHoopParts(leftHoop)
 
     const rightHoop = createSingleHoop();
     rightHoop.position.set(45, 0, 0);
     rightHoop.rotation.y = -Math.PI / 2;
     rightHoop.castShadow = true
+    rightHoop.collidableParts = getCollidableHoopParts(rightHoop)
 
     hoopsGroup.add(leftHoop);
     hoopsGroup.add(rightHoop);
@@ -250,8 +252,14 @@ function createBasketballRim() {
     return rimGroup;
 }
 
-// function createBasketballNet() {
-//     return;
-// }
+function getCollidableHoopParts(hoopGroup) {
+    const collidable = [];
+    hoopGroup.traverse(child => {
+        if (child.isMesh) {
+            collidable.push(child);
+        }
+    });
+    return collidable;
+}
 
 export { BasketballHoops };

@@ -23,7 +23,8 @@ function Basketball() {
 
     return {
         object: basketball,
-        baseHeight: radius
+        baseHeight: radius,
+        hitbox: new THREE.Sphere(basketball.position.clone(), radius)
     };
 }
 

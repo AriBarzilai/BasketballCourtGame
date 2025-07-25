@@ -7,6 +7,7 @@ class PlayerControls {
         this.controlMoveSpeed = controlMoveSpeed;
         this.audioManager = audioManager; // AudioManager instance for sound effects
         this.basketballTrail = basketballTrail;
+        this.currHoop = null
         this.moveStates = {
             ArrowUp: false,
             ArrowLeft: false,
@@ -76,7 +77,7 @@ class PlayerControls {
         this.basketballData.object.position.add(moveBy);
         this.dirArrow.position.add(moveBy);
         if (this.moveStates.throwedBall) {
-            this.handleCollisions();
+            this.handleCollisions(deltaTime);
         }
         this.dirArrow.setDirection(this.computeAimedDirection())
 
@@ -109,11 +110,10 @@ class PlayerControls {
     }
 
     getDirToHoop() {
-        let curr_hoop = null
         // determines which half of the basketball court the basketball is in.
-        curr_hoop = this.basketballData.object.position.x >= 0 ? this.hoopData.rightHoop : this.hoopData.leftHoop;
+        this.currHoop = this.basketballData.object.position.x >= 0 ? this.hoopData.rightHoop : this.hoopData.leftHoop;
         const hoopWorldPos = new THREE.Vector3();
-        curr_hoop.getObjectByName('hoop').getObjectByName('rim').getWorldPosition(hoopWorldPos);
+        this.currHoop.getObjectByName('hoop').getObjectByName('rim').getWorldPosition(hoopWorldPos);
 
         const ballWorldPos = new THREE.Vector3();
         this.basketballData.object.getWorldPosition(ballWorldPos);
@@ -137,46 +137,18 @@ class PlayerControls {
         return aimed;
     }
 
-    handleCollisions() {
+    handleCollisions(deltaTime) {
         // Convenient shorthands
-        const pos = this.basketballData.object.position;
         const vel = this.currVelocity;
 
         if (!this.isWithinWorldBounds()) {
             // Only apply gravity when out of bounds
-            vel.y += this.GRAVITY * 0.016; // assuming deltaTime is ~0.016
-            return; // Skip other collision checks when out of bounds
+            vel.y += this.GRAVITY * deltaTime;
+            return;
         }
 
-        // Court extents minus ball radius
-        const halfW = this.basketballCourt.width * 0.5 - this.basketballData.baseHeight;
-        const halfD = this.basketballCourt.depth * 0.5 - this.basketballData.baseHeight;
-        const floorY = this.basketballCourt.baseHeight + this.basketballData.baseHeight;
-
-        // ── FLOOR ────────────────────────────────────────────────
-        if (pos.y < floorY) {
-            pos.y = floorY;
-
-            if (Math.abs(vel.y) > this.MIN_BOUNCE_SPEED) {
-                // big enough hit → bounce
-                vel.y = -vel.y * this.RESTITUTION;
-            } else {
-                // Stop trail effect
-                this.basketballTrail.stopTrail();
-
-                // too small → stick to floor, start rolling / stopping
-                vel.y = 0;
-                // extra damping to make it gently roll/stop
-                vel.x *= this.ROLL_DAMP;
-                vel.z *= this.ROLL_DAMP;
-                // If we've basically stopped, sleep it
-                if (vel.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED && vel.y <= 1) {
-                    console.log(vel)
-                    vel.set(0, 0, 0);
-                    this.moveStates.throwedBall = false;
-                }
-            }
-        }
+        this.handleCourtCollision();
+        this.handleHoopCollision();
 
         // kill negligible bounce so ball finally rests
         if (Math.abs(vel.y) < 0.2) vel.y = 0;
@@ -215,6 +187,70 @@ class PlayerControls {
         if (this.basketballData.object.position.z <= -1 * (this.basketballCourt.courtSurroundingDepth / 2)) return false;
         if (this.basketballData.object.position.z >= this.basketballCourt.courtSurroundingDepth / 2) return false;
         return true;
+    }
+
+    handleHoopCollision() {
+        const ballPos = this.basketballData.object.position;
+        const ballRadius = this.basketballData.baseHeight;
+
+        const tempBox = new THREE.Box3();      // reused box
+
+        for (const part of this.currHoop.collidableParts) {
+            tempBox.setFromObject(part);
+
+            // Broad‑phase: cheap overlap test
+            if (!tempBox.intersectsSphere(new THREE.Sphere(ballPos, ballRadius))) continue;
+
+            // Narrow‑phase: closest point on the box
+            const closest = tempBox.clampPoint(ballPos.clone(), new THREE.Vector3());
+
+            const normalVec = ballPos.clone().sub(closest);
+            const dist = normalVec.length();
+
+            // If the ball centre lies exactly on a box face corner/edge
+            const normal = dist === 0
+                ? new THREE.Vector3(0, 1, 0)
+                : normalVec.divideScalar(dist);    // true surface normal
+
+            const penetration = ballRadius - dist;
+            if (penetration > 0) {
+                // 1) positional correction
+                ballPos.addScaledVector(normal, penetration + 1e-3);
+
+                // 2) reflect velocity
+                this.currVelocity.reflect(normal)
+                    .multiplyScalar(this.RESTITUTION);
+            }
+            return;   // one contact per frame is enough
+        }
+    }
+
+
+    handleCourtCollision() {
+        const floorY = this.basketballCourt.baseHeight + this.basketballData.baseHeight;
+        if (this.basketballData.object.position.y < floorY) {
+            this.basketballData.object.position.y = floorY;
+
+            if (Math.abs(this.currVelocity.y) > this.MIN_BOUNCE_SPEED) {
+                // big enough hit → bounce
+                this.currVelocity.y = -this.currVelocity.y * this.RESTITUTION;
+            } else {
+                // Stop trail effect
+                this.basketballTrail.stopTrail();
+
+                // too small → stick to floor, start rolling / stopping
+                this.currVelocity.y = 0;
+                // extra damping to make it gently roll/stop
+                this.currVelocity.x *= this.ROLL_DAMP;
+                this.currVelocity.z *= this.ROLL_DAMP;
+                // If we've basically stopped, sleep it
+                if (this.currVelocity.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED && this.currVelocity.y <= 1) {
+                    console.log(this.currVelocity)
+                    this.currVelocity.set(0, 0, 0);
+                    this.moveStates.throwedBall = false;
+                }
+            }
+        }
     }
 }
 
