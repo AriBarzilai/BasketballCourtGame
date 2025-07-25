@@ -6,6 +6,7 @@ import { Basketball } from './Scene/Basketball.js';
 import { BasketballHoops } from './Scene/Hoop.js';
 import PlayerControls from './PlayerControls.js'
 import { initPlayerDirectionArrow } from './Scene/playerVFX.js';
+import AudioManager from './AudioManager.js'
 
 const CLOCK = new THREE.Clock()
 
@@ -15,6 +16,23 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+///////////////////////////////////////////////
+// AUDIO SOUNDS /
+///////////////////////////////////////////////
+
+const audioManager = new AudioManager();
+let audioInitialized = false;
+
+// Function to initialize audio on first user interaction
+function initializeAudioOnFirstInteraction() {
+  if (!audioInitialized) {
+      audioManager.preloadSounds();
+      audioManager.startBackgroundMusic();
+      audioInitialized = true;
+      console.log("🎵 Audio system initialized - background music and sounds active!");
+  }
+}
 
 ///////////////////////////////////
 // SCENE OBJECTS
@@ -89,9 +107,11 @@ gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled)
 // Add camera info container to DOM (top left)
 document.body.appendChild(uiFramework.diagnosticsInfoContainer);
 
+
 let isUIVisible = true;
 // Handle key events
 function handleKeyDown(e) {
+  initializeAudioOnFirstInteraction();
   const key = e.key.toLowerCase();
   if (key === "h") {
     // Toggle UI visibility
@@ -120,6 +140,10 @@ function handleKeyDown(e) {
     // Toggle diagnostics display
     isDiagnosticsEnabled = !isDiagnosticsEnabled;
     uiFramework.diagnosticsInfoContainer.style.display = (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
+  }
+
+  if (key === 'r') {
+    playerControls.resetBallToCenter();
   }
 
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
@@ -204,6 +228,11 @@ function handleResize() {
 }
 
 window.addEventListener('resize', handleResize);
+
+// Cleanup on unload
+window.addEventListener('beforeunload', () => {
+  audioManager.cleanup();
+});
 
 // Start the application
 console.log("GAME START")

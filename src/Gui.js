@@ -165,21 +165,21 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
 
     // Play controls
     const playControls = `
-        <div class="control-section future-controls">
+        <div class="control-section current-controls">
             <h4>Ball Controls:</h4>
-            <div class="control-item disabled">
+            <div class="control-item">
                 <span class="control-key">Arrow Keys</span>
                 <span class="control-desc">Move ball</span>
             </div>
-            <div class="control-item disabled">
+            <div class="control-item">
                 <span class="control-key">W/S</span>
                 <span class="control-desc">Increase/Decrease shot power</span>
             </div>
-            <div class="control-item disabled">
+            <div class="control-item">
                 <span class="control-key">Space</span>
                 <span class="control-desc">Launch ball toward hoop</span>
             </div>
-            <div class="control-item disabled">
+            <div class="control-item">
                 <span class="control-key">R</span>
                 <span class="control-desc">Reset ball to center</span>
             </div>
@@ -432,16 +432,6 @@ function addUIFrameworkStyles(document) {
             color: #4CAF50;
         }
         
-        .future-controls {
-            border-top: 1px solid #444;
-            padding-top: 10px;
-            opacity: 0.7;
-        }
-        
-        .future-controls h4 {
-            color: #ff9800;
-        }
-        
         .control-item {
             display: flex;
             align-items: center;
@@ -451,12 +441,8 @@ function addUIFrameworkStyles(document) {
             transition: background-color 0.3s ease;
         }
         
-        .control-item:hover:not(.disabled) {
+        .control-item:hover: {
             background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .control-item.disabled {
-            opacity: 0.5;
         }
         
         .control-key {
@@ -472,12 +458,6 @@ function addUIFrameworkStyles(document) {
             border: 1px solid #555;
             font-size: 0.75em;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .disabled .control-key {
-            background: linear-gradient(145deg, #444, #333);
-            color: #888;
-            border-color: #666;
         }
         
         .control-desc {
