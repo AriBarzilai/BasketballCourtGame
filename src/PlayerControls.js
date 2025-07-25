@@ -40,7 +40,7 @@ class PlayerControls {
         this.ROLL_DAMP = 0.96;  // extra horizontal damping when resting on floor
         this.SLEEP_SPEED = 1;  // below this overall speed, stop completely
 
-
+        this.hasScoredThisThrow = false; // prevents tallying ball through hoop multiple times
         this.dirArrow.setDirection(this.computeAimedDirection());
     }
 
@@ -94,6 +94,7 @@ class PlayerControls {
 
     launchBall() {
         if (this.moveStates.throwedBall) return;
+        this.hasScoredThisThrow = false;
         console.log("BALL THROWN");
         this.moveStates = {
             moveUp: false,
@@ -212,12 +213,21 @@ class PlayerControls {
                 const horizDist = Math.hypot(dx, dz);
 
                 const RIM_RADIUS = part.geometry.parameters.radius;
+                const overlap = (RIM_RADIUS + ballRadius) - horizDist;
                 if (horizDist < RIM_RADIUS - ballRadius) {
-                    if (this.currVelocity.y < 0) {
+                    if (!this.hasScoredThisThrow && this.currVelocity.y < 0) {
                         stats.shotsMade += 1;
                         stats.playerScore += 100;
+                        this.hasScoredThisThrow = true;
                     }
+                    return;
+                } else if (overlap > 0) {
+                    const normal = new THREE.Vector3(dx, 0, dz).normalize();
+                    ballPos.addScaledVector(normal, overlap + 1e-3);   // positional correction
+                    this.currVelocity.reflect(normal).multiplyScalar(this.RESTITUTION);
+                    return;
                 }
+
             }
 
             // Narrow‑phase: closest point on the box
