@@ -1,9 +1,10 @@
 class PlayerControls {
-    constructor(basketballCourt, basketballData, hoopData, playerDirArrow, controlMoveSpeed = 20) {
+    constructor(basketballCourt, basketballData, hoopData, playerDirArrow, audioManager, controlMoveSpeed = 20) {
         this.basketballCourt = basketballCourt
         this.basketballData = basketballData;
         this.dirArrow = playerDirArrow; // VFX used to indicate direction and force of throw
         this.hoopData = hoopData
+        this.audioManager = audioManager; // AudioManager instance for sound effects
         this.controlMoveSpeed = controlMoveSpeed;
         this.throwForce = 43;
         this.moveStates = {
@@ -132,6 +133,8 @@ class PlayerControls {
         this.dirArrow.position.copy(this.basketballData.object.position);
         this.dirArrow.visible = true;
 
+        // Sound effect for ball reset
+        this.audioManager.playBallBounce();
         // Optional: reset direction arrow's direction
         this.dirArrow.setDirection(this.computeAimedDirection());
         // this.dirArrow.setDirection(this.computeAimedDirection());

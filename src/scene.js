@@ -85,7 +85,7 @@ scene.add(playerDirArrow)
 ///////////////////////////////////////////////
 
 // Add player controls for basketball
-const playerControls = new PlayerControls(courtData, basketballData, hoopData, playerDirArrow);
+const playerControls = new PlayerControls(courtData, basketballData, hoopData, playerDirArrow, audioManager);
 
 // Set camera position for better view
 const cameraTranslate = new THREE.Matrix4();
@@ -143,7 +143,8 @@ function handleKeyDown(e) {
   }
 
   if (key === 'r') {
-    playerControls.resetBallToCenter();
+    playerControls.resetBall();
+
   }
 
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
