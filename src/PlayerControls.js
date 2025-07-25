@@ -200,6 +200,17 @@ class PlayerControls {
 
             // Broad‑phase: cheap overlap test
             if (!tempBox.intersectsSphere(new THREE.Sphere(ballPos, ballRadius))) continue;
+            if (part.name === 'rim') {
+                // check if inside hoop or not
+                const rimCenter = part.getWorldPosition(new THREE.Vector3());
+
+                const dx = ballPos.x - rimCenter.x;
+                const dz = ballPos.z - rimCenter.z;
+                const horizDist = Math.hypot(dx, dz);
+
+                const RIM_RADIUS = part.geometry.parameters.radius;
+                if (horizDist < RIM_RADIUS - ballRadius) continue;
+            }
 
             // Narrow‑phase: closest point on the box
             const closest = tempBox.clampPoint(ballPos.clone(), new THREE.Vector3());
