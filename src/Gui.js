@@ -1,3 +1,10 @@
+const stats = {
+    playerScore: 0,
+    shotAttempts: 0,
+    shotsMade: 0
+};
+export default stats;
+
 function createScoreContainer(document) {
     const container = document.createElement('div');
     container.id = 'score-container';
@@ -22,7 +29,7 @@ function createScoreContainer(document) {
     scoreDisplay.innerHTML = `
         <div class="team-score">
             <span class="team-name">Player</span>
-            <span class="score-value" id="player-score">0</span>
+            <span class="score-value" id="player-score">${stats.playerScore}</span>
         </div>
         <div class="score-separator">-</div>
         <div class="team-score">
@@ -43,17 +50,17 @@ function createScoreContainer(document) {
         <div class="stat-row">
             <div class="stat-item compact">
                 <span class="stat-label">Score:</span>
-                <span class="stat-value" id="total-score">0</span>
+                <span class="stat-value" id="total-score">${stats.playerScore}</span>
             </div>
             <div class="stat-item compact">
                 <span class="stat-label">Attempts:</span>
-                <span class="stat-value" id="shot-attempts">0</span>
+                <span class="stat-value" id="shot-attempts">${stats.shotAttempts}</span>
             </div>
         </div>
         <div class="stat-row">
             <div class="stat-item compact">
                 <span class="stat-label">Made:</span>
-                <span class="stat-value" id="shots-made">0</span>
+                <span class="stat-value" id="shots-made">${stats.shotsMade}</span>
             </div>
             <div class="stat-item compact">
                 <span class="stat-label">Accuracy:</span>
@@ -63,7 +70,7 @@ function createScoreContainer(document) {
     `;
 
     // Assemble the sections
-    scoreSection.appendChild(scoreDisplay);
+    scoreSection.appendChild(scoreDisplay); ``
     statisticsSection.appendChild(statisticsDisplay);
 
     horizontalContent.appendChild(scoreSection);
@@ -75,16 +82,16 @@ function createScoreContainer(document) {
     return container;
 }
 
-function updateStatistics(totalScore, shotAttempts, shotsMade) {
+function updateStatistics() {
     // Update the DOM elements
-    document.getElementById('total-score').textContent = totalScore;
-    document.getElementById('shot-attempts').textContent = shotAttempts;
-    document.getElementById('shots-made').textContent = shotsMade;
+    document.getElementById('total-score').textContent = stats.playerScore;
+    document.getElementById('shot-attempts').textContent = stats.shotAttempts;
+    document.getElementById('shots-made').textContent = stats.shotsMade;
 
     // Calculate and update shooting percentage
     let shootingPercentage = 0;
-    if (shotAttempts > 0) {
-        shootingPercentage = Math.round((shotsMade / shotAttempts) * 100);
+    if (stats.shotAttempts > 0) {
+        shootingPercentage = Math.round((stats.shotsMade / stats.shotAttempts) * 100);
     }
     document.getElementById('shooting-percentage').textContent = `${shootingPercentage}%`;
 }

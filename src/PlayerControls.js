@@ -1,3 +1,5 @@
+import stats from "/src/Gui.js";
+
 class PlayerControls {
     constructor(basketballCourt, basketballData, hoopData, playerDirArrow, audioManager, basketballTrail, controlMoveSpeed = 20) {
         this.basketballCourt = basketballCourt
@@ -107,6 +109,7 @@ class PlayerControls {
         if (this.currVelocity.y > 0) {
             this.basketballTrail.startTrail();
         }
+        stats.shotAttempts += 1
     }
 
     getDirToHoop() {
@@ -209,7 +212,12 @@ class PlayerControls {
                 const horizDist = Math.hypot(dx, dz);
 
                 const RIM_RADIUS = part.geometry.parameters.radius;
-                if (horizDist < RIM_RADIUS - ballRadius) continue;
+                if (horizDist < RIM_RADIUS - ballRadius) {
+                    if (this.currVelocity.y < 0) {
+                        stats.shotsMade += 1;
+                        stats.playerScore += 100;
+                    }
+                }
             }
 
             // Narrow‑phase: closest point on the box

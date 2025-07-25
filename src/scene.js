@@ -28,10 +28,10 @@ let audioInitialized = false;
 // Function to initialize audio on first user interaction
 function initializeAudioOnFirstInteraction() {
   if (!audioInitialized) {
-      audioManager.preloadSounds();
-      audioManager.startBackgroundMusic();
-      audioInitialized = true;
-      console.log("🎵 Audio system initialized - background music and sounds active!");
+    audioManager.preloadSounds();
+    audioManager.startBackgroundMusic();
+    audioInitialized = true;
+    console.log("🎵 Audio system initialized - background music and sounds active!");
   }
 }
 
@@ -197,6 +197,7 @@ function update() {
   // Update camera diagnostics
   gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, playerControls, isUIVisible, isDiagnosticsEnabled);
   gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled)
+  gui.updateStatistics()
 }
 
 // Animation function
