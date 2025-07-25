@@ -7,6 +7,7 @@ import { BasketballHoops } from './Scene/Hoop.js';
 import PlayerControls from './PlayerControls.js'
 import { initPlayerDirectionArrow } from './Scene/playerVFX.js';
 import AudioManager from './AudioManager.js'
+import BasketballTrailEffect from './BasketballTrailEffect.js'
 
 const CLOCK = new THREE.Clock()
 
@@ -71,6 +72,8 @@ basketballData.object.position.y = courtData.baseHeight + basketballData.baseHei
 basketballData.object.position.x = 0;
 scene.add(basketballData.object);
 
+const basketballTrail = new BasketballTrailEffect(scene, basketballData);
+
 const hoopData = BasketballHoops();
 hoopData.leftHoop.position.y = courtData.baseHeight;
 scene.add(hoopData.leftHoop);
@@ -85,7 +88,7 @@ scene.add(playerDirArrow)
 ///////////////////////////////////////////////
 
 // Add player controls for basketball
-const playerControls = new PlayerControls(courtData, basketballData, hoopData, playerDirArrow, audioManager);
+const playerControls = new PlayerControls(courtData, basketballData, hoopData, playerDirArrow, audioManager, basketballTrail);
 
 // Set camera position for better view
 const cameraTranslate = new THREE.Matrix4();
@@ -155,10 +158,6 @@ function handleKeyDown(e) {
     playerControls.launchBall();
   }
 
-  if (key === 'r') {
-    playerControls.resetBall()
-  }
-
   if (key === 'w') {
     playerControls.moveStates.increasePower = true;
     playerControls.moveStates.decreasePower = false;
@@ -209,6 +208,10 @@ function update() {
   controls.update();
   // Update player controls
   playerControls.update(deltaTime);
+  // Update trail effect
+  if (playerControls.moveStates.throwedBall) {
+    basketballTrail.update();
+  }
   // Update camera diagnostics
   gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, isUIVisible, isDiagnosticsEnabled);
   gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled)
