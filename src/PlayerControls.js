@@ -87,7 +87,6 @@ class PlayerControls {
             this.moveStates.throwedBall = false
             this.updateDirArrow();
         }
-
     }
 
     launchBall() {
@@ -142,6 +141,12 @@ class PlayerControls {
         // Convenient shorthands
         const pos = this.basketballData.object.position;
         const vel = this.currVelocity;
+
+        if (!this.isWithinWorldBounds()) {
+            // Only apply gravity when out of bounds
+            vel.y += this.GRAVITY * 0.016; // assuming deltaTime is ~0.016
+            return; // Skip other collision checks when out of bounds
+        }
 
         // Court extents minus ball radius
         const halfW = this.basketballCourt.width * 0.5 - this.basketballData.baseHeight;
@@ -202,6 +207,14 @@ class PlayerControls {
 
     getBallSpeed() {
         return this.currVelocity ? this.currVelocity.lengthSq() : 0
+    }
+
+    isWithinWorldBounds() {
+        if (this.basketballData.object.position.x >= this.basketballCourt.courtSurroundingWidth / 2) return false;
+        if (this.basketballData.object.position.x <= -1 * (this.basketballCourt.courtSurroundingWidth / 2)) return false;
+        if (this.basketballData.object.position.z <= -1 * (this.basketballCourt.courtSurroundingDepth / 2)) return false;
+        if (this.basketballData.object.position.z >= this.basketballCourt.courtSurroundingDepth / 2) return false;
+        return true;
     }
 }
 

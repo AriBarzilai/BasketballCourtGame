@@ -78,6 +78,8 @@ function BasketballCourt() {
         , baseHeight: baseFloorHeight
         , width: width
         , depth: depth
+        , courtSurroundingWidth: courtSurroundingGeometry.parameters.width
+        , courtSurroundingDepth: courtSurroundingGeometry.parameters.depth
     }
 }
 
