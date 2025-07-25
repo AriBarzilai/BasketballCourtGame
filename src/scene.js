@@ -159,24 +159,6 @@ function handleKeyUp(e) {
 document.addEventListener('keydown', handleKeyDown);
 document.addEventListener('keyup', handleKeyUp);
 
-// Display diagnostics such as camera position/direction, ball position, etc.
-function updateDiagnosticsInfo(camera,) {
-  // Camera position
-  const pos = camera.position;
-  // Camera facing direction (normalized vector)
-  const target = new THREE.Vector3();
-  camera.getWorldDirection(target);
-
-  // Format numbers to 2 decimals
-  function fmt(v) { return v.toFixed(2); }
-
-  uiFramework.diagnosticsInfoContainer.innerHTML =
-    `<b>Camera Position:</b> (${fmt(pos.x)}, ${fmt(pos.y)}, ${fmt(pos.z)})<br>` +
-    `<b>Camera Facing:</b> (${fmt(target.x)}, ${fmt(target.y)}, ${fmt(target.z)})`
-  uiFramework.diagnosticsInfoContainer.style.display =
-    (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
-}
-
 function update() {
   const deltaTime = CLOCK.getDelta();
   // Update controls
@@ -185,7 +167,7 @@ function update() {
   // Update player controls
   playerControls.update(deltaTime);
   // Update camera diagnostics
-  gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, isUIVisible, isDiagnosticsEnabled);
+  gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, playerControls, isUIVisible, isDiagnosticsEnabled);
   gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled)
 }
 

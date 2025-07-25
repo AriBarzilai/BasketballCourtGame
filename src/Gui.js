@@ -15,7 +15,7 @@ function createScoreContainer(document) {
     // LEFT SIDE: Score section
     const scoreSection = document.createElement('div');
     scoreSection.className = 'score-section';
-    
+
     const scoreDisplay = document.createElement('div');
     scoreDisplay.id = 'score-display';
     scoreDisplay.className = 'score-display';
@@ -35,7 +35,7 @@ function createScoreContainer(document) {
     const statisticsSection = document.createElement('div');
     statisticsSection.id = 'statistics-section';
     statisticsSection.className = 'statistics-section';
-    
+
     const statisticsDisplay = document.createElement('div');
     statisticsDisplay.id = 'statistics-display';
     statisticsDisplay.className = 'statistics-display';
@@ -65,10 +65,10 @@ function createScoreContainer(document) {
     // Assemble the sections
     scoreSection.appendChild(scoreDisplay);
     statisticsSection.appendChild(statisticsDisplay);
-    
+
     horizontalContent.appendChild(scoreSection);
     horizontalContent.appendChild(statisticsSection);
-    
+
     container.appendChild(mainTitle);
     container.appendChild(horizontalContent);
 
@@ -80,7 +80,7 @@ function updateStatistics(totalScore, shotAttempts, shotsMade) {
     document.getElementById('total-score').textContent = totalScore;
     document.getElementById('shot-attempts').textContent = shotAttempts;
     document.getElementById('shots-made').textContent = shotsMade;
-    
+
     // Calculate and update shooting percentage
     let shootingPercentage = 0;
     if (shotAttempts > 0) {
@@ -189,21 +189,23 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
 }
 
 // Display diagnostics such as camera position/direction, ball position, etc.
-function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, basketball, isUIVisible, isDiagnosticsEnabled) {
+function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, basketball, playerControls, isUIVisible, isDiagnosticsEnabled) {
     // Camera position
     const cameraPos = camera.position;
     // Camera facing direction (normalized vector)
     const cameraFacing = new THREE.Vector3();
     const basketballPos = basketball.object.position;
     camera.getWorldDirection(cameraFacing);
+    const basketBallSpeed = playerControls.getBallSpeed()
 
     // Format numbers to 2 decimals
     function fmt(v) { return v.toFixed(2); }
 
     diagnosticsInfoContainer.innerHTML =
-        `<b>Camera Position:</b> (${fmt(cameraPos.x)}, ${fmt(cameraPos.y)}, ${fmt(cameraPos.z)})<br>` +
-        `<b>Camera Facing:</b> (${fmt(cameraFacing.x)}, ${fmt(cameraFacing.y)}, ${fmt(cameraFacing.z)})<br>` +
-        `<b>Basketball Position:</b> (${fmt(basketballPos.x)}, ${fmt(basketballPos.y)}, ${fmt(basketballPos.z)})`
+        `<b>Camera Position:</b> (${fmt(cameraPos.x)}, ${fmt(cameraPos.y)}, ${fmt(cameraPos.z)})<br/>` +
+        `<b>Camera Facing:</b> (${fmt(cameraFacing.x)}, ${fmt(cameraFacing.y)}, ${fmt(cameraFacing.z)})<br/>` +
+        `<b>Basketball Position:</b> (${fmt(basketballPos.x)}, ${fmt(basketballPos.y)}, ${fmt(basketballPos.z)})<br/>` +
+        `<b>Basketball Speed:</b> (${fmt(basketBallSpeed)}})`
     diagnosticsInfoContainer.style.display =
         (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
 }
@@ -552,5 +554,5 @@ export {
     updateEnhancedControlsDisplay,
     updateDiagnosticsInfo,
     updateStatistics,
-    resetStatistics  
+    resetStatistics
 }

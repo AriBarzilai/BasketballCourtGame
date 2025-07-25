@@ -5,7 +5,6 @@ class PlayerControls {
         this.dirArrow = playerDirArrow; // VFX used to indicate direction and force of throw
         this.hoopData = hoopData
         this.controlMoveSpeed = controlMoveSpeed;
-        this.throwForce = 43;
         this.moveStates = {
             ArrowUp: false,
             ArrowLeft: false,
@@ -16,13 +15,26 @@ class PlayerControls {
             decreasePower: false,
         }
 
-        this.GRAVITY = -19.6 // gravity but scaled
-        this.FRICTION_COEFF = 0.99
-        this.currVelocity = new THREE.Vector3();
 
+        ////////////////////
+        // AIM BALL
+        ////////////////////
         this.pitch = 0;
         this.pitchSpeed = Math.PI / 3
         this.throwExtraForce = 25; // multiplied by (pitch / (Math.PI / 2)) - steeper angle increases force of throw
+        this.throwForce = 43;
+
+        ////////////////////
+        // BALL PHYSICS
+        ////////////////////
+        this.GRAVITY = -19.6 // gravity but scaled
+        this.FRICTION_COEFF = 0.99
+        this.currVelocity = new THREE.Vector3();
+        this.RESTITUTION = 0.7 // 1 = perfectly elastic, 0 = perfectly bouncy
+        this.MIN_BOUNCE_SPEED = 2;   // below this vertical speed, do NOT bounce
+        this.ROLL_DAMP = 0.96;  // extra horizontal damping when resting on floor
+        this.SLEEP_SPEED = 1;  // below this overall speed, stop completely
+
 
         this.dirArrow.setDirection(this.computeAimedDirection());
     }
@@ -50,24 +62,32 @@ class PlayerControls {
             if (this.moveStates.ArrowRight) {
                 if (moveBy.z + this.basketballData.object.position.z < this.basketballCourt.depth / 2 - this.basketballData.baseHeight) moveBy.z += 1;
             }
-            console.log(this.moveStates)
             if (this.moveStates.increasePower) this.pitch += this.pitchSpeed * deltaTime;
             if (this.moveStates.decreasePower) this.pitch -= this.pitchSpeed * deltaTime;
             this.pitch = THREE.MathUtils.clamp(this.pitch, 0, Math.PI / 2);
         }
-        if (moveBy.lengthSq() <= 0 && !(this.moveStates.increasePower || this.moveStates.decreasePower || this.throwedBall)) return;
+        if (moveBy.lengthSq() <= 0 && !(this.moveStates.increasePower || this.moveStates.decreasePower || this.moveStates.throwedBall)) return;
         if (!this.moveStates.throwedBall) {
             moveBy.normalize().multiplyScalar(deltaTime * this.controlMoveSpeed);
         }
         // out of bounds check
         this.basketballData.object.position.add(moveBy);
         this.dirArrow.position.add(moveBy);
-
+        if (this.moveStates.throwedBall) {
+            this.handleCollisions();
+        }
         this.dirArrow.setDirection(this.computeAimedDirection())
+        console.log(this.computeAimedDirection())
 
         if (this.basketballData.object.position.y < -5) {
             this.resetBall();
+        } else if (this.currVelocity.lengthSq() < 0.05) {
+            this.currVelocity.roundToZero()
+            this.moveStates.throwedBall = false
+            this.updateDirArrow();
         }
+
+        console.log(this.dirArrow)
     }
 
     launchBall() {
@@ -118,6 +138,52 @@ class PlayerControls {
         return aimed;
     }
 
+    handleCollisions() {
+        // Convenient shorthands
+        const pos = this.basketballData.object.position;
+        const vel = this.currVelocity;
+
+        // Court extents minus ball radius
+        const halfW = this.basketballCourt.width * 0.5 - this.basketballData.baseHeight;
+        const halfD = this.basketballCourt.depth * 0.5 - this.basketballData.baseHeight;
+        const floorY = this.basketballCourt.baseHeight + this.basketballData.baseHeight;
+
+        // ── FLOOR ────────────────────────────────────────────────
+        if (pos.y < floorY) {
+            pos.y = floorY;
+
+            if (Math.abs(vel.y) > this.MIN_BOUNCE_SPEED) {
+                // big enough hit → bounce
+                vel.y = -vel.y * this.RESTITUTION;
+            } else {
+                // too small → stick to floor, start rolling / stopping
+                vel.y = 0;
+
+                // extra damping to make it gently roll/stop
+                vel.x *= this.ROLL_DAMP;
+                vel.z *= this.ROLL_DAMP;
+
+                // If we've basically stopped, sleep it
+                if (vel.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED) {
+                    vel.set(0, 0, 0);
+                    this.moveStates.throwedBall = false;
+                }
+            }
+        }
+
+
+        // ── SIDELINES (X) ────────────────────────────────────────
+        if (pos.x > halfW) { pos.x = halfW; vel.x = -vel.x * this.RESTITUTION; }
+        if (pos.x < -halfW) { pos.x = -halfW; vel.x = -vel.x * this.RESTITUTION; }
+
+        // ── BASELINES (Z) ────────────────────────────────────────
+        if (pos.z > halfD) { pos.z = halfD; vel.z = -vel.z * this.RESTITUTION; }
+        if (pos.z < -halfD) { pos.z = -halfD; vel.z = -vel.z * this.RESTITUTION; }
+
+        // kill negligible bounce so ball finally rests
+        if (Math.abs(vel.y) < 0.2) vel.y = 0;
+    }
+
     resetBall() {
         console.log('BALL RESET')
         this.moveStates = {
@@ -129,12 +195,18 @@ class PlayerControls {
         }
         this.basketballData.object.position.set(0, this.basketballData.baseHeight + this.basketballCourt.baseHeight, 0)
         this.currVelocity.set(0, 0, 0)
+        this.updateDirArrow();
+    }
+
+    updateDirArrow() {
         this.dirArrow.position.copy(this.basketballData.object.position);
         this.dirArrow.visible = true;
-
-        // Optional: reset direction arrow's direction
         this.dirArrow.setDirection(this.computeAimedDirection());
-        // this.dirArrow.setDirection(this.computeAimedDirection());
+    }
+
+
+    getBallSpeed() {
+        return this.currVelocity ? this.currVelocity.lengthSq() : 0
     }
 }
 
