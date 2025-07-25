@@ -189,6 +189,8 @@ class PlayerControls {
         this.basketballData.object.position.set(0, this.basketballData.baseHeight + this.basketballCourt.baseHeight, 0)
         this.currVelocity.set(0, 0, 0)
         this.updateDirArrow();
+        this.basketballTrail.clearTrailGeometry();
+        this.basketballTrail.stopTrail();
     }
 
     updateDirArrow() {
