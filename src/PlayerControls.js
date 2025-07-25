@@ -197,11 +197,6 @@ class PlayerControls {
         
         // Start the basketball trail effect
         this.basketballTrail.startTrail();
-        
-        // Play throwing sound
-        if (this.audioManager) {
-            this.audioManager.playBallBounce();
-        }
     }
 
     getDirToHoop() {
