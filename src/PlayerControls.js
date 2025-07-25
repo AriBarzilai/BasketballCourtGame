@@ -79,17 +79,15 @@ class PlayerControls {
             this.handleCollisions();
         }
         this.dirArrow.setDirection(this.computeAimedDirection())
-        console.log(this.computeAimedDirection())
 
         if (this.basketballData.object.position.y < -5) {
             this.resetBall();
-        } else if (this.currVelocity.lengthSq() < 0.05) {
+        } else if (this.currVelocity.lengthSq() < 0.05 && this.basketballData.object.position.y <= 1) {
             this.currVelocity.roundToZero()
             this.moveStates.throwedBall = false
             this.updateDirArrow();
         }
 
-        console.log(this.dirArrow)
     }
 
     launchBall() {
@@ -131,15 +129,12 @@ class PlayerControls {
     computeAimedDirection() { // takes into accout both direction of hoop and pitch of throw
         // base horizontal dir to hoop
         const flat = this.getDirToHoop().clone();
-        console.log(flat)
         flat.y = 0;
         flat.normalize();
 
         const aimed = flat.clone();
         aimed.y = Math.tan(this.pitch);
         aimed.normalize();
-        console.log(this.pitch)
-        console.log(aimed)
         return aimed;
     }
 
@@ -170,7 +165,8 @@ class PlayerControls {
                 vel.x *= this.ROLL_DAMP;
                 vel.z *= this.ROLL_DAMP;
                 // If we've basically stopped, sleep it
-                if (vel.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED) {
+                if (vel.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED && vel.y <= 1) {
+                    console.log(vel)
                     vel.set(0, 0, 0);
                     this.moveStates.throwedBall = false;
                 }
