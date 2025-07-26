@@ -1,5 +1,4 @@
 
-// Updated stats object - simplified to work with GameModeManager
 const stats = {
     playerScore: 0,
     shotAttempts: 0,
@@ -64,7 +63,7 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
     // Get current mode info from GameModeManager
     const isTwoPlayerMode = gameModeManager && gameModeManager.getCurrentMode().isTwoPlayer;
     const currentMode = gameModeManager ? gameModeManager.getCurrentMode() : null;
-    
+
     if (isTwoPlayerMode && gameModeManager) {
         // TWO_PLAYER mode - show separate stats for each player
         const twoPlayerStats = gameModeManager.twoPlayerStats;
@@ -73,7 +72,7 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
         mainTitle.textContent = `${currentMode.name} - Player ${currentPlayer}'s Turn`;
         vsSection.style.display = 'block';
         
-        // Restore the left border for statistics section
+        // Remove borders and padding for symmetric layout
         statisticsDisplay.style.borderLeft = 'none';
         statisticsDisplay.style.paddingLeft = '0';
         
@@ -253,6 +252,19 @@ function createEnhancedControlsContainer(document) {
     return container;
 }
 
+function createCreditsContainer(document) {
+    const container = document.createElement('div');
+    container.id = 'credits-container';
+    container.className = 'credits-container';
+    container.innerHTML = `
+        <div style="text-align: center; font-size: 0.7em; color: #999;">
+            Game created by<br/>
+            <span style="color: #4CAF50; font-weight: bold;">Ari Barzilai and Netta Yaniv</span>
+        </div>
+    `;
+    return container;
+}
+
 function createDiagnosticsInfoContainer(document) {
     const container = document.createElement('div');
     container.id = 'camera-info-container';
@@ -344,13 +356,8 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
             </div>
     `;
 
-    // Reset control - available in free mode, challenge modes, or when game is not active
-    const currentMode = gameModeManager ? gameModeManager.getCurrentMode() : null;
-    const isResetAllowed = isInFreeMode || 
-                        !isGameActive ||
-                        (currentMode && (currentMode.name === 'Timed Challenge' || currentMode.name === 'Shot Limit'));
-
-    if (isResetAllowed) {
+    // Reset control - only available in free mode or when game is not active
+    if (isInFreeMode || !isGameActive) {
         playControls += `
             <div class="control-item">
                 <span class="control-key">R</span>
@@ -364,7 +371,6 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
             </div>
         `;
     }
-
 
     playControls += `</div>`;
     
@@ -410,16 +416,19 @@ function createCompleteUIFramework(document) {
     const scoreContainer = createScoreContainer(document);
     const controlsContainer = createEnhancedControlsContainer(document);
     const diagnosticsInfoContainer = createDiagnosticsInfoContainer(document);
+    const creditsContainer = createCreditsContainer(document);
 
     mainContainer.appendChild(scoreContainer);
     mainContainer.appendChild(controlsContainer);
     mainContainer.appendChild(diagnosticsInfoContainer);
+    mainContainer.appendChild(creditsContainer);
 
     return {
         mainContainer: mainContainer,
         scoreContainer: scoreContainer,
         controlsContainer: controlsContainer,
-        diagnosticsInfoContainer: diagnosticsInfoContainer
+        diagnosticsInfoContainer: diagnosticsInfoContainer,
+        creditsContainer: creditsContainer
     };
 }
 
@@ -776,6 +785,24 @@ function addUIFrameworkStyles(document) {
             color: #4CAF50;
             font-weight: bold;
         }
+
+        /* Credits Container */
+        .credits-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            backdrop-filter: blur(5px);
+            pointer-events: auto;
+            font-size: 0.75em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            max-width: 150px;
+            z-index: 1000;
+        }
         
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -806,6 +833,13 @@ function addUIFrameworkStyles(document) {
                 right: 10px;
                 max-width: none;
             }
+
+            .credits-container {
+                bottom: 10px;
+                right: 10px;
+                font-size: 0.65em;
+                padding: 6px 8px;
+            }
         }
 
         @media (max-width: 600px) {
@@ -823,6 +857,14 @@ function addUIFrameworkStyles(document) {
             
             .score-container {
                 min-width: auto;
+            }
+
+            .credits-container {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                margin: 10px auto 0 auto;
+                text-align: center;
             }
         }
         
