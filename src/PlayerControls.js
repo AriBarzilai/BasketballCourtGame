@@ -51,7 +51,6 @@ class PlayerControls {
             moveDelta.multiplyScalar(deltaTime)
             this.currVelocity.y += this.GRAVITY * deltaTime
             this.currVelocity.multiplyScalar(this.FRICTION_COEFF)
-            this.applyRollingRotation(moveDelta)
         } else { // else if object is in playerControl mode
             moveDelta = new THREE.Vector3();
             // Forward/backward (z axis)
@@ -76,7 +75,7 @@ class PlayerControls {
         if (!this.moveStates.throwedBall) {
             moveDelta.normalize().multiplyScalar(deltaTime * this.controlMoveSpeed);
         }
-        // out of bounds check
+        this.applyRollingRotation(moveDelta)
         this.basketballData.object.position.add(moveDelta);
         this.dirArrow.position.add(moveDelta);
         if (this.moveStates.throwedBall) {
@@ -89,7 +88,11 @@ class PlayerControls {
         } else if (this.currVelocity.lengthSq() < 0.05 && this.basketballData.object.position.y <= 1) {
             this.currVelocity.roundToZero()
             this.moveStates.throwedBall = false
-            this.updateDirArrow();
+            if (!this.isWithinCourtBounds()) {
+                this.resetBall()
+            } else {
+                this.updateDirArrow();
+            }
         }
     }
 
@@ -191,6 +194,14 @@ class PlayerControls {
         if (this.basketballData.object.position.x <= -1 * (this.basketballCourt.courtSurroundingWidth / 2)) return false;
         if (this.basketballData.object.position.z <= -1 * (this.basketballCourt.courtSurroundingDepth / 2)) return false;
         if (this.basketballData.object.position.z >= this.basketballCourt.courtSurroundingDepth / 2) return false;
+        return true;
+    }
+
+    isWithinCourtBounds() {
+        if (this.basketballData.object.position.x >= this.basketballCourt.width / 2) return false;
+        if (this.basketballData.object.position.x <= -1 * (this.basketballCourt.width / 2)) return false;
+        if (this.basketballData.object.position.z <= -1 * (this.basketballCourt.depth / 2)) return false;
+        if (this.basketballData.object.position.z >= this.basketballCourt.depth / 2) return false;
         return true;
     }
 
