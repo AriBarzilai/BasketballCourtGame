@@ -176,6 +176,10 @@ class PlayerControls {
         this.updateDirArrow();
         this.basketballTrail.clearTrailGeometry();
         this.basketballTrail.stopTrail();
+
+        if (this.audioManager) {
+            this.audioManager.playBallBounce();
+        }
     }
 
     updateDirArrow() {
@@ -231,6 +235,11 @@ class PlayerControls {
                         stats.shotsMade += 1;
                         stats.playerScore += 100;
                         this.hasScoredThisThrow = true;
+
+                        // Play net sound
+                        this.audioManager.playSound('shorsSwishNetSound');
+                        // Play score sound
+                        this.audioManager.playScoreSound();
                     }
                     return;
                 } else if (overlap > 0) {
@@ -261,6 +270,9 @@ class PlayerControls {
                 // 2) reflect velocity
                 this.currVelocity.reflect(normal)
                     .multiplyScalar(this.RESTITUTION);
+                
+                // 3) apply audio 
+                this.audioManager.playBackboardHit();
             }
             return;   // one contact per frame is enough
         }

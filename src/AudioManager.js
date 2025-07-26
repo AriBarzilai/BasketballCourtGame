@@ -33,8 +33,12 @@ class AudioManager {
             this.sounds.ballBounce.volume = this.sfxVolume;
             
             // Backboard hit sound
-            this.sounds.backboardHit = new Audio('./sounds/basketball-backboard-35568.mp3');
+            this.sounds.backboardHit = new Audio('./sounds/basketball-backboard.mp3');
             this.sounds.backboardHit.volume = this.sfxVolume;
+
+            // Score sound (when player scores)
+            this.sounds.score = new Audio('./sounds/score.mp3');
+            this.sounds.score.volume = this.sfxVolume;
             
             console.log("AudioManager: All sounds loaded successfully");
             
@@ -66,6 +70,10 @@ class AudioManager {
     // Play backboard hit sound (when ball hits backboard)
     playBackboardHit() {
         this.playSound('backboardHit');
+    }
+
+    playScoreSound() {
+        this.playSound('score');
     }
 
     // Generic method to play any sound effect
