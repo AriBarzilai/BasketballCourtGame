@@ -6,7 +6,7 @@ class BasketballTrailEffect {
         this.basketball = basketball;
         
         // Trail configuration
-        this.maxTrailPoints = 15;        // Optimal length for throws
+        this.maxTrailPoints = 60;        // Optimal length for throws
         this.trailPositions = [];        // Array to store trail positions
         this.isActive = false;           // Whether trail is currently active
         
