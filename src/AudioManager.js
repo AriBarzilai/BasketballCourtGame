@@ -30,7 +30,7 @@ class AudioManager {
 
             // Ball bounce sound
             this.sounds.ballBounce = new Audio('./sounds/shortBallBounce.mov');
-            this.sounds.ballBounce.volume = this.sfxVolume * 2;
+            this.sounds.ballBounce.volume = this.sfxVolume;
 
             // Backboard hit sound
             this.sounds.backboardHit = new Audio('./sounds/basketball-backboard.mp3');

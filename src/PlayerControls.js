@@ -256,7 +256,7 @@ class PlayerControls {
 
                         this.feedbackManager.showSuccessfulShot();
                         // Play net sound
-                        this.audioManager.playSound('shorsSwishNetSound');
+                        this.audioManager.playNetSwish();
                         // Play score sound
                         this.audioManager.playScoreSound();
                     } else {
@@ -272,7 +272,7 @@ class PlayerControls {
                     ballPos.addScaledVector(normal, overlap + 1e-3);   // positional correction
                     this.currVelocity.reflect(normal).multiplyScalar(this.RESTITUTION);
                     if (this.audioManager) {
-                        this.audioManager.playBallBounce();
+                        this.audioManager.playBackboardHit();
                     }
                     return;
                 }
