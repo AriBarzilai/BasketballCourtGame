@@ -1,4 +1,5 @@
 import stats from "/src/Gui.js";
+import FeedbackManager from './FeedbackManager.js'; 
 
 class PlayerControls {
     constructor(basketballCourt, basketballData, hoopData, playerDirArrow, audioManager, basketballTrail, controlMoveSpeed = 20) {
@@ -9,6 +10,7 @@ class PlayerControls {
         this.controlMoveSpeed = controlMoveSpeed;
         this.audioManager = audioManager; // AudioManager instance for sound effects
         this.basketballTrail = basketballTrail;
+        this.feedbackManager = new FeedbackManager();
         this.currHoop = null
         this.moveStates = {
             ArrowUp: false,
@@ -51,6 +53,12 @@ class PlayerControls {
             moveDelta.multiplyScalar(deltaTime)
             this.currVelocity.y += this.GRAVITY * deltaTime
             this.currVelocity.multiplyScalar(this.FRICTION_COEFF)
+            // Add feedback during shot
+            if (!this.feedbackManager.hasFeedbackBeenGiven()) {
+                this.feedbackManager.checkIfPassedOverHoop(this.basketballData.object.position, this.currHoop);
+                this.feedbackManager.checkIfNearHoop(this.basketballData.object.position, this.currHoop);
+            }
+
         } else { // else if object is in playerControl mode
             moveDelta = new THREE.Vector3();
             // Forward/backward (z axis)
@@ -86,8 +94,13 @@ class PlayerControls {
         if (this.basketballData.object.position.y < -5) {
             this.resetBall();
         } else if (this.currVelocity.lengthSq() < 0.05 && this.basketballData.object.position.y <= 1) {
+            const wasThrown = this.moveStates.throwedBall; 
             this.currVelocity.roundToZero()
             this.moveStates.throwedBall = false
+
+            if (wasThrown && !this.feedbackManager.hasFeedbackBeenGiven()) {
+                this.feedbackManager.analyzeShotResult();
+            }        
             if (!this.isWithinCourtBounds()) {
                 this.resetBall()
             } else {
@@ -99,6 +112,8 @@ class PlayerControls {
     launchBall() {
         if (this.moveStates.throwedBall) return;
         this.hasScoredThisThrow = false;
+        this.feedbackManager.startNewShot();
+
         console.log("BALL THROWN");
         this.moveStates = {
             moveUp: false,
@@ -173,6 +188,8 @@ class PlayerControls {
         }
         this.basketballData.object.position.set(0, this.basketballData.baseHeight + this.basketballCourt.baseHeight, 0)
         this.currVelocity.set(0, 0, 0)
+
+        this.feedbackManager.startNewShot();
         this.updateDirArrow();
         this.basketballTrail.clearTrailGeometry();
         this.basketballTrail.stopTrail();
@@ -236,6 +253,7 @@ class PlayerControls {
                         stats.playerScore += 100;
                         this.hasScoredThisThrow = true;
 
+                        this.feedbackManager.showSuccessfulShot();
                         // Play net sound
                         this.audioManager.playSound('shorsSwishNetSound');
                         // Play score sound
@@ -270,8 +288,19 @@ class PlayerControls {
                 // 2) reflect velocity
                 this.currVelocity.reflect(normal)
                     .multiplyScalar(this.RESTITUTION);
-                
-                // 3) apply audio 
+                // 3) mark backboard hit for feedback
+                if (part.name === 'backboard') {
+                    // Ball hit backboard = too strong
+                    this.feedbackManager.markBackboardHit();
+                } else if (part.name === 'pole' || part.name === 'support' || part.name.includes('pole') || part.name.includes('support')) {
+                    // Ball hit pole/support = too weak (ball was too low)
+                    this.feedbackManager.markPoleHit();
+                } else {
+                    // Other hoop parts - default to backboard logic
+                    this.feedbackManager.markBackboardHit();
+                }
+
+                // 4) apply audio 
                 this.audioManager.playBackboardHit();
             }
             return;   // one contact per frame is enough
