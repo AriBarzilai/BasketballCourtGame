@@ -51,6 +51,7 @@ class PlayerControls {
             moveBy.multiplyScalar(deltaTime)
             this.currVelocity.y += this.GRAVITY * deltaTime
             this.currVelocity.multiplyScalar(this.FRICTION_COEFF)
+            this.applyRollingRotation(moveBy)
         } else { // else if object is in playerControl mode
             moveBy = new THREE.Vector3();
             // Forward/backward (z axis)
@@ -280,6 +281,24 @@ class PlayerControls {
                 }
             }
         }
+    }
+
+    applyRollingRotation(moveDelta) {
+        // rotates the ball in a realistic manner to simulate rolling
+        // moveDelta: actual position change this frame (THREE.Vector3)
+        const dist = moveDelta.length();
+        const r = this.basketballData.baseHeight; // radius already available
+
+        if (dist < 1e-6 || !r) return;
+
+        // Axis perpendicular to motion and world up (0,1,0)
+        const up = new THREE.Vector3(0, 1, 0);
+        const axis = new THREE.Vector3().crossVectors(up, moveDelta);
+
+        if (axis.lengthSq() < 1e-10) return;
+
+        const angle = dist / r;
+        this.basketballData.object.rotateOnWorldAxis(axis.normalize(), angle);
     }
 }
 
