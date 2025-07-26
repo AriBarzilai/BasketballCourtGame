@@ -368,6 +368,17 @@ class GameModeManager {
         }
     }
 
+    // endGame(won, customMessage = null) {
+    //     this.isGameActive = false;
+    //     this.modeStats.gameComplete = true;
+    //     this.modeStats.gameWon = won;
+        
+    //     const mode = this.modes[this.currentMode];
+    //     const gameTime = (Date.now() - this.gameStartTime) / 1000;
+        
+    //     this.showGameEndScreen(won, gameTime, customMessage);
+    //     console.log(`GameModeManager: Game ended - ${won ? 'WON' : 'LOST'} in ${gameTime.toFixed(1)}s`);
+    // }
     endGame(won, customMessage = null) {
         this.isGameActive = false;
         this.modeStats.gameComplete = true;
@@ -376,8 +387,45 @@ class GameModeManager {
         const mode = this.modes[this.currentMode];
         const gameTime = (Date.now() - this.gameStartTime) / 1000;
         
+        // Check for high score and get stats
+        let finalScore, finalAttempts, finalMade, finalAccuracy;
+        
+        if (mode.isTwoPlayer) {
+            // For two-player mode, use the winning player's stats
+            const winningPlayer = this.twoPlayerStats.player1.shotsMade >= mode.targetScore ? 
+                this.twoPlayerStats.player1 : this.twoPlayerStats.player2;
+            finalScore = winningPlayer.score;
+            finalAttempts = winningPlayer.shotAttempts;
+            finalMade = winningPlayer.shotsMade;
+            finalAccuracy = finalAttempts > 0 ? Math.round((finalMade / finalAttempts) * 100) : 0;
+        } else {
+            // For single player modes, use global stats
+            finalScore = this.getCurrentStats().playerScore;
+            finalAttempts = this.getCurrentStats().shotAttempts;
+            finalMade = this.getCurrentStats().shotsMade;
+            finalAccuracy = finalAttempts > 0 ? Math.round((finalMade / finalAttempts) * 100) : 0;
+        }
+        
+        // Check if it's a high score (only for won games or completed challenges)
+        if ((won || mode.hasTimer || mode.hasShootLimit) && window.leaderboardManager) {
+            if (window.leaderboardManager.isHighScore(mode.name, finalScore)) {
+                // Show high score dialog first, then show game end screen
+                window.leaderboardManager.showHighScoreDialog(
+                    mode.name, finalScore, finalAttempts, finalMade, finalAccuracy,
+                    () => this.showGameEndScreen(won, gameTime, customMessage)
+                );
+                return; // Don't show game end screen immediately
+            }
+        }
+        
         this.showGameEndScreen(won, gameTime, customMessage);
         console.log(`GameModeManager: Game ended - ${won ? 'WON' : 'LOST'} in ${gameTime.toFixed(1)}s`);
+    }
+//********************************************************** */
+    getCurrentStats() {
+        // You'll need to pass the main stats object to GameModeManager
+        // For now, we'll access it globally - you can improve this later
+        return window.gameStats || { playerScore: 0, shotAttempts: 0, shotsMade: 0 };
     }
 
     showGameEndScreen(won, gameTime, customMessage = null) {
