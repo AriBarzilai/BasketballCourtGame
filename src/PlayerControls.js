@@ -93,6 +93,8 @@ class PlayerControls {
 
         if (this.basketballData.object.position.y < -5) {
             this.resetBall();
+            // too strong, overshot the hoop, like backboard hit
+            this.feedbackManager.markBackboardHit();
         } else if (this.currVelocity.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED && this.basketballData.object.position.y <= 1) {
             const wasThrown = this.moveStates.throwedBall;
 
@@ -257,6 +259,12 @@ class PlayerControls {
                         this.audioManager.playSound('shorsSwishNetSound');
                         // Play score sound
                         this.audioManager.playScoreSound();
+                    } else {
+                        if (ballPos.y <= rimCenter.y) {
+                            this.feedbackManager.markPoleHit()
+                        } else {
+                            this.feedbackManager.showFeedback("CLOSE! Try again! 🎯", "#feca57")
+                        }
                     }
                     return;
                 } else if (overlap > 0) {
@@ -294,9 +302,18 @@ class PlayerControls {
                 if (part.name === 'backboard') {
                     // Ball hit backboard = too strong
                     this.feedbackManager.markBackboardHit();
-                } else if (part.name === 'pole' || part.name === 'support' || part.name.includes('pole') || part.name.includes('support')) {
-                    // Ball hit pole/support = too weak (ball was too low)
-                    this.feedbackManager.markPoleHit();
+                } else if (part.name === 'pole' || part.name === 'support' || part.name === 'basketballNet' || part.name.includes('pole') || part.name.includes('support') || part.name.includes('basketballNet')) {
+                    // Check if ball is above rim height
+                    const rim = this.currHoop.getObjectByName('hoop').getObjectByName('rim');
+                    const rimWorldPos = new THREE.Vector3();
+                    rim.getWorldPosition(rimWorldPos);
+                    if (ballPos.y > rimWorldPos.y) {
+                        // Ball hit pole/support above rim = too strong (like backboard)
+                        this.feedbackManager.markBackboardHit();
+                    } else {
+                        // Ball hit pole/support below rim = too weak (ball was too low)
+                        this.feedbackManager.markPoleHit();
+                    }
                 } else {
                     // Other hoop parts - default to backboard logic
                     this.feedbackManager.markBackboardHit();
