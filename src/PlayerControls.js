@@ -45,40 +45,40 @@ class PlayerControls {
     }
 
     update(deltaTime) {
-        let moveBy;
+        let moveDelta;
         if (this.moveStates.throwedBall) { // if object is in throwing  mode
-            moveBy = this.currVelocity.clone()
-            moveBy.multiplyScalar(deltaTime)
+            moveDelta = this.currVelocity.clone()
+            moveDelta.multiplyScalar(deltaTime)
             this.currVelocity.y += this.GRAVITY * deltaTime
             this.currVelocity.multiplyScalar(this.FRICTION_COEFF)
-            this.applyRollingRotation(moveBy)
+            this.applyRollingRotation(moveDelta)
         } else { // else if object is in playerControl mode
-            moveBy = new THREE.Vector3();
+            moveDelta = new THREE.Vector3();
             // Forward/backward (z axis)
             if (this.moveStates.ArrowUp) {
-                if (moveBy.x + this.basketballData.object.position.x < this.basketballCourt.width / 2 - this.basketballData.baseHeight) moveBy.x += 1;
+                if (moveDelta.x + this.basketballData.object.position.x < this.basketballCourt.width / 2 - this.basketballData.baseHeight) moveDelta.x += 1;
             }
             if (this.moveStates.ArrowDown) {
-                if (moveBy.x + this.basketballData.object.position.x > -1 * (this.basketballCourt.width / 2 - this.basketballData.baseHeight)) moveBy.x -= 1;
+                if (moveDelta.x + this.basketballData.object.position.x > -1 * (this.basketballCourt.width / 2 - this.basketballData.baseHeight)) moveDelta.x -= 1;
             }
             // Left/right (x axis)
             if (this.moveStates.ArrowLeft) {
-                if (moveBy.z + this.basketballData.object.position.z > -1 * (this.basketballCourt.depth / 2 - this.basketballData.baseHeight)) moveBy.z -= 1;
+                if (moveDelta.z + this.basketballData.object.position.z > -1 * (this.basketballCourt.depth / 2 - this.basketballData.baseHeight)) moveDelta.z -= 1;
             }
             if (this.moveStates.ArrowRight) {
-                if (moveBy.z + this.basketballData.object.position.z < this.basketballCourt.depth / 2 - this.basketballData.baseHeight) moveBy.z += 1;
+                if (moveDelta.z + this.basketballData.object.position.z < this.basketballCourt.depth / 2 - this.basketballData.baseHeight) moveDelta.z += 1;
             }
             if (this.moveStates.increasePower) this.pitch += this.pitchSpeed * deltaTime;
             if (this.moveStates.decreasePower) this.pitch -= this.pitchSpeed * deltaTime;
             this.pitch = THREE.MathUtils.clamp(this.pitch, 0, Math.PI / 2);
         }
-        if (moveBy.lengthSq() <= 0 && !(this.moveStates.increasePower || this.moveStates.decreasePower || this.moveStates.throwedBall)) return;
+        if (moveDelta.lengthSq() <= 0 && !(this.moveStates.increasePower || this.moveStates.decreasePower || this.moveStates.throwedBall)) return;
         if (!this.moveStates.throwedBall) {
-            moveBy.normalize().multiplyScalar(deltaTime * this.controlMoveSpeed);
+            moveDelta.normalize().multiplyScalar(deltaTime * this.controlMoveSpeed);
         }
         // out of bounds check
-        this.basketballData.object.position.add(moveBy);
-        this.dirArrow.position.add(moveBy);
+        this.basketballData.object.position.add(moveDelta);
+        this.dirArrow.position.add(moveDelta);
         if (this.moveStates.throwedBall) {
             this.handleCollisions(deltaTime);
         }
