@@ -199,11 +199,16 @@ function handleKeyDown(e) {
   }
 
   if (key === 'r') {
-    // Only allow reset in free mode
-    if (gameModeManager.isInFreeMode() || !gameModeManager.isGameActive) {
+    // Allow reset in free mode, when game is not active, OR during timed/shot limit challenges
+    const currentMode = gameModeManager.getCurrentMode();
+    const isAllowedMode = gameModeManager.isInFreeMode() || 
+                         currentMode.name === 'Timed Challenge' || 
+                         currentMode.name === 'Shot Limit';
+    
+    if (isAllowedMode || !gameModeManager.isGameActive) {
       playerControls.resetBall();
     } else {
-      console.log("Cannot reset ball during active game mode");
+      console.log("Cannot reset ball during two-player mode");
     }
   }
 

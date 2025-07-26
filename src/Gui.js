@@ -64,7 +64,7 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
     // Get current mode info from GameModeManager
     const isTwoPlayerMode = gameModeManager && gameModeManager.getCurrentMode().isTwoPlayer;
     const currentMode = gameModeManager ? gameModeManager.getCurrentMode() : null;
-
+    
     if (isTwoPlayerMode && gameModeManager) {
         // TWO_PLAYER mode - show separate stats for each player
         const twoPlayerStats = gameModeManager.twoPlayerStats;
@@ -329,8 +329,13 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
             </div>
     `;
 
-    // Reset control - only available in free mode or when game is not active
-    if (isInFreeMode || !isGameActive) {
+    // Reset control - available in free mode, challenge modes, or when game is not active
+    const currentMode = gameModeManager ? gameModeManager.getCurrentMode() : null;
+    const isResetAllowed = isInFreeMode || 
+                        !isGameActive ||
+                        (currentMode && (currentMode.name === 'Timed Challenge' || currentMode.name === 'Shot Limit'));
+
+    if (isResetAllowed) {
         playControls += `
             <div class="control-item">
                 <span class="control-key">R</span>
@@ -344,6 +349,7 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
             </div>
         `;
     }
+
 
     playControls += `</div>`;
     
