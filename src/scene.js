@@ -10,6 +10,7 @@ import { initPlayerDirectionArrow } from './Scene/playerVFX.js';
 import AudioManager from './AudioManager.js'
 import BasketballTrailEffect from './BasketballTrailEffect.js'
 import GameModeManager from './GameModeManager.js'
+import LeaderboardManager from './LeaderboardManager.js'
 
 function resetGameStats() {
   stats.shotsMade = 0;
@@ -133,6 +134,15 @@ let previousStats = {
 let previousBallState = { throwedBall: false };
 
 ///////////////////////////////////////////////
+// LEADERBOARD / UI
+///////////////////////////////////////////////
+const leaderboardManager = new LeaderboardManager();
+
+// Make it globally accessible for GameModeManager
+window.leaderboardManager = leaderboardManager;
+window.gameStats = stats;
+
+///////////////////////////////////////////////
 // CAMERA / CONTROLS / UI
 ///////////////////////////////////////////////
 
@@ -226,6 +236,11 @@ function handleKeyDown(e) {
   } else {
     console.log("Cannot throw ball - game is over. Press 'M' to change modes or restart.");
   }
+  }
+
+  if (key === 'l') {
+    // Show leaderboard
+    leaderboardManager.showLeaderboard();
   }
 
   if (key === 'w') {
@@ -332,6 +347,7 @@ window.addEventListener('resize', handleResize);
 window.addEventListener('beforeunload', () => {
   audioManager.cleanup();
   gameModeManager.dispose();
+  leaderboardManager.dispose();
 });
 
 // Start the application

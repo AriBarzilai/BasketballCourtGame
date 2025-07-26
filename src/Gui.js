@@ -46,7 +46,7 @@ function createScoreContainer(document) {
     statisticsSection.appendChild(statisticsDisplay);
 
     horizontalContent.appendChild(vsSection);
-    horizontalContent.appendChild(statisticsDisplay);
+    horizontalContent.appendChild(statisticsSection);
 
     container.appendChild(mainTitle);
     container.appendChild(horizontalContent);
@@ -74,8 +74,8 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
         vsSection.style.display = 'block';
         
         // Restore the left border for statistics section
-        statisticsDisplay.style.borderLeft = '1px solid #444';
-        statisticsDisplay.style.paddingLeft = '20px';
+        statisticsDisplay.style.borderLeft = 'none';
+        statisticsDisplay.style.paddingLeft = '0';
         
         // Reset justify content
         horizontalContent.style.justifyContent = 'space-between';
@@ -109,6 +109,17 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
                 </div>
             </div>
         `;
+
+        // Make both containers have identical styling for TWO_PLAYER mode
+        vsDisplay.style.display = 'flex';
+        vsDisplay.style.justifyContent = 'center';
+        vsDisplay.style.alignItems = 'center';
+        vsDisplay.style.width = '100%';
+        
+        statisticsDisplay.style.display = 'flex';
+        statisticsDisplay.style.justifyContent = 'center';
+        statisticsDisplay.style.alignItems = 'center';
+        statisticsDisplay.style.width = '100%';
 
         // RIGHT SIDE: Player 2's individual statistics
         statisticsDisplay.innerHTML = `
@@ -288,6 +299,10 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
             <div class="control-item">
                 <span class="control-key">Mouse Wheel</span>
                 <span class="control-desc">Zoom in/out ${isOrbitEnabled ? '(Available)' : '(Disabled)'}</span>
+            </div>
+            <div class="control-item">
+                <span class="control-key">L</span>
+                <span class="control-desc">View Leaderboard</span>
             </div>
         </div>
     `;
