@@ -8,11 +8,11 @@ class AudioManager {
             ballBounce: null,
             backboardHit: null
         };
-        
+
         // Fixed volume levels (no user controls)
         this.sfxVolume = 0.7;      // Sound effects volume
         this.musicVolume = 0.15;   // Background music volume (low but audible)
-        
+
         this.init();
     }
 
@@ -23,15 +23,15 @@ class AudioManager {
             this.sounds.backgroundMusic = new Audio('./sounds/backgroundVoices.mp3');
             this.sounds.backgroundMusic.loop = true;  // Loop continuously
             this.sounds.backgroundMusic.volume = this.musicVolume;
-            
+
             // Net swish sound (for successful shots)
             this.sounds.netSwish = new Audio('./sounds/shorsSwishNetSound.mov');
             this.sounds.netSwish.volume = this.sfxVolume;
-            
+
             // Ball bounce sound
             this.sounds.ballBounce = new Audio('./sounds/shortBallBounce.mov');
-            this.sounds.ballBounce.volume = this.sfxVolume;
-            
+            this.sounds.ballBounce.volume = this.sfxVolume * 2;
+
             // Backboard hit sound
             this.sounds.backboardHit = new Audio('./sounds/basketball-backboard.mp3');
             this.sounds.backboardHit.volume = this.sfxVolume;
@@ -39,9 +39,9 @@ class AudioManager {
             // Score sound (when player scores)
             this.sounds.score = new Audio('./sounds/score.mp3');
             this.sounds.score.volume = this.sfxVolume;
-            
+
             console.log("AudioManager: All sounds loaded successfully");
-            
+
         } catch (error) {
             console.error("AudioManager: Error loading sounds:", error);
         }

@@ -1,5 +1,5 @@
 import stats from "/src/Gui.js";
-import FeedbackManager from './FeedbackManager.js'; 
+import FeedbackManager from './FeedbackManager.js';
 
 class PlayerControls {
     constructor(basketballCourt, basketballData, hoopData, playerDirArrow, audioManager, basketballTrail, controlMoveSpeed = 20) {
@@ -93,14 +93,12 @@ class PlayerControls {
 
         if (this.basketballData.object.position.y < -5) {
             this.resetBall();
-        } else if (this.currVelocity.lengthSq() < 0.05 && this.basketballData.object.position.y <= 1) {
-            const wasThrown = this.moveStates.throwedBall; 
-            this.currVelocity.roundToZero()
-            this.moveStates.throwedBall = false
+        } else if (this.currVelocity.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED && this.basketballData.object.position.y <= 1) {
+            const wasThrown = this.moveStates.throwedBall;
 
             if (wasThrown && !this.feedbackManager.hasFeedbackBeenGiven()) {
                 this.feedbackManager.analyzeShotResult();
-            }        
+            }
             if (!this.isWithinCourtBounds()) {
                 this.resetBall()
             } else {
@@ -108,6 +106,7 @@ class PlayerControls {
             }
         }
     }
+
 
     launchBall() {
         if (this.moveStates.throwedBall) return;
@@ -174,7 +173,7 @@ class PlayerControls {
         this.handleHoopCollision();
 
         // kill negligible bounce so ball finally rests
-        if (Math.abs(vel.y) < 0.2) vel.y = 0;
+        // if (Math.abs(vel.y) < 0.2) vel.y = 0;
     }
 
     resetBall() {
@@ -264,6 +263,9 @@ class PlayerControls {
                     const normal = new THREE.Vector3(dx, 0, dz).normalize();
                     ballPos.addScaledVector(normal, overlap + 1e-3);   // positional correction
                     this.currVelocity.reflect(normal).multiplyScalar(this.RESTITUTION);
+                    if (this.audioManager) {
+                        this.audioManager.playBallBounce();
+                    }
                     return;
                 }
 
@@ -316,6 +318,9 @@ class PlayerControls {
             if (Math.abs(this.currVelocity.y) > this.MIN_BOUNCE_SPEED) {
                 // big enough hit → bounce
                 this.currVelocity.y = -this.currVelocity.y * this.RESTITUTION;
+                if (this.audioManager) {
+                    this.audioManager.playBallBounce();
+                }
             } else {
                 // Stop trail effect
                 this.basketballTrail.stopTrail();
@@ -328,8 +333,11 @@ class PlayerControls {
                 // If we've basically stopped, sleep it
                 if (this.currVelocity.lengthSq() < this.SLEEP_SPEED * this.SLEEP_SPEED && this.currVelocity.y <= 1) {
                     console.log(this.currVelocity)
-                    this.currVelocity.set(0, 0, 0);
                     this.moveStates.throwedBall = false;
+                    if (!this.feedbackManager.hasFeedbackBeenGiven()) {
+                        this.feedbackManager.checkIfPassedOverHoop(this.basketballData.object.position, this.currHoop);
+                        this.feedbackManager.checkIfNearHoop(this.basketballData.object.position, this.currHoop);
+                    }
                 }
             }
         }
