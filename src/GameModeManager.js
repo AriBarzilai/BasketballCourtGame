@@ -7,7 +7,7 @@ class GameModeManager {
         this.onResetBall = onResetBall;    // Callback to reset ball position
         this.onHideUI = onHideUI;          // Callback to hide game UI
         this.onShowUI = onShowUI;          // Callback to show game UI
-        
+
         // Available game modes
         this.modes = {
             FREE_SHOOT: {
@@ -46,13 +46,13 @@ class GameModeManager {
                 isTwoPlayer: true
             }
         };
-        
+
         // Current game state
         this.currentMode = 'FREE_SHOOT';
         this.isGameActive = false;
         this.timer = 0;
         this.gameStartTime = 0;
-        
+
         // Mode-specific tracking
         this.modeStats = {
             shotsRemaining: 0,
@@ -62,7 +62,7 @@ class GameModeManager {
             gameComplete: false,
             gameWon: false
         };
-        
+
         // Enhanced two-player mode tracking with separate statistics
         this.twoPlayerStats = {
             currentPlayer: 1, // 1 or 2
@@ -78,20 +78,20 @@ class GameModeManager {
                 shotsMade: 0
             }
         };
-        
+
         // Track previous global stats to detect changes
         this.previousGlobalStats = {
             shotAttempts: 0,
             shotsMade: 0
         };
-        
+
         // UI Elements
         this.gameUI = null;
         this.modeSelector = null;
-        
+
         this.createGameModeUI();
         this.initializeMode(this.currentMode);
-        
+
         console.log("GameModeManager: Game modes system initialized");
     }
 
@@ -103,7 +103,8 @@ class GameModeManager {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: 'translate(-50%, -50%) scale(1)',
+            transformOrigin: 'center center',
             background: rgba(0, 0, 0, 0.95);
             color: white;
             padding: 30px;
@@ -117,6 +118,8 @@ class GameModeManager {
         `;
         this.modeSelector.innerHTML = this.createModeSelectorHTML();
         document.body.appendChild(this.modeSelector);
+        this.applyModeSelectorScale();
+
 
         // Game status UI (hidden initially)
         this.gameUI = document.createElement('div');
@@ -145,7 +148,7 @@ class GameModeManager {
             <h2 style="margin: 0 0 20px 0; color: #4CAF50;">🏀 Choose Game Mode</h2>
             <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px;">
         `;
-        
+
         Object.keys(this.modes).forEach(modeKey => {
             const mode = this.modes[modeKey];
             const isSelected = modeKey === this.currentMode ? 'background: #4CAF50; transform: scale(1.02);' : '';
@@ -154,6 +157,7 @@ class GameModeManager {
                     cursor: pointer;
                     padding: 15px;
                     border: 2px solid #666;
+                    background: #111;
                     border-radius: 10px;
                     transition: all 0.3s ease;
                     ${isSelected}
@@ -166,7 +170,7 @@ class GameModeManager {
                 </div>
             `;
         });
-        
+
         html += `
             </div>
             <button onclick="window.gameModeManager.startSelectedMode()" style="
@@ -187,7 +191,7 @@ class GameModeManager {
                 Press 'M' during game to change modes
             </div>
         `;
-        
+
         return html;
     }
 
@@ -207,22 +211,22 @@ class GameModeManager {
         // Hide the mode selector
         this.modeSelector.style.display = 'none';
         this.gameUI.style.display = 'block';
-        
+
         // Show game UI elements (scoreboard, controls) when game starts
         if (this.onShowUI) {
             this.onShowUI();
         }
-        
+
         // Reset all game stats when starting new mode
         if (this.onResetStats) {
             this.onResetStats();
         }
-        
+
         // Reset ball to center when starting new mode
         if (this.onResetBall) {
             this.onResetBall();
         }
-        
+
         this.initializeMode(this.currentMode);
         this.startGame();
         console.log(`GameModeManager: Starting ${this.modes[this.currentMode].name}`);
@@ -231,7 +235,7 @@ class GameModeManager {
     initializeMode(modeKey) {
         const mode = this.modes[modeKey];
         this.currentMode = modeKey;
-        
+
         // Reset mode-specific stats
         this.modeStats = {
             shotsRemaining: mode.shotLimit || Infinity,
@@ -241,7 +245,7 @@ class GameModeManager {
             gameComplete: false,
             gameWon: false
         };
-        
+
         // Reset two-player stats with separate statistics
         this.twoPlayerStats = {
             currentPlayer: 1,
@@ -257,31 +261,31 @@ class GameModeManager {
                 shotsMade: 0
             }
         };
-        
+
         // Reset previous stats tracking
         this.previousGlobalStats = {
             shotAttempts: 0,
             shotsMade: 0
         };
-        
+
         this.timer = 0;
         this.isGameActive = false;
-        
+
         console.log(`GameModeManager: Initialized ${mode.name} mode`);
     }
 
     startGame() {
         this.isGameActive = true;
         this.gameStartTime = Date.now();
-        
+
         const mode = this.modes[this.currentMode];
         if (mode.hasTimer && !mode.isSpeedMode) {
             this.timer = mode.timerDuration;
         }
-        
+
         this.updateGameUI();
         console.log(`GameModeManager: Game started - ${mode.name}`);
-        
+
         // Play start sound
         if (this.audioManager && this.audioManager.playScoreSound) {
             this.audioManager.playScoreSound();
@@ -290,14 +294,14 @@ class GameModeManager {
 
     update(deltaTime, gameStats) {
         if (!this.isGameActive || this.modeStats.gameComplete) return;
-        
+
         const mode = this.modes[this.currentMode];
-        
+
         // Update timer
         if (mode.hasTimer && !mode.isSpeedMode) {
             this.timer -= deltaTime;
             this.modeStats.timeRemaining = Math.max(0, this.timer);
-            
+
             if (this.timer <= 0) {
                 this.endGame(false); // Time's up
                 return;
@@ -308,18 +312,18 @@ class GameModeManager {
         if (mode.isTwoPlayer) {
             this.updateTwoPlayerStats(gameStats);
         }
-        
+
         // Check win conditions
         this.checkWinConditions(gameStats);
-        
+
         // Update UI
         this.updateGameUI();
     }
 
     // Update individual player statistics in TWO_PLAYER mode
     updateTwoPlayerStats(gameStats) {
-        const currentPlayerStats = this.twoPlayerStats.currentPlayer === 1 
-            ? this.twoPlayerStats.player1 
+        const currentPlayerStats = this.twoPlayerStats.currentPlayer === 1
+            ? this.twoPlayerStats.player1
             : this.twoPlayerStats.player2;
 
         // Detect new attempts for current player
@@ -346,7 +350,7 @@ class GameModeManager {
 
     checkWinConditions(gameStats) {
         const mode = this.modes[this.currentMode];
-        
+
         switch (this.currentMode) {
             case 'SHOT_LIMIT':
                 // Check if out of shots
@@ -356,7 +360,7 @@ class GameModeManager {
                     this.endGame(won);
                 }
                 break;
-                
+
             case 'TWO_PLAYER':
                 // Handle two-player win condition
                 if (this.twoPlayerStats.player1.shotsMade >= mode.targetScore) {
@@ -372,10 +376,10 @@ class GameModeManager {
     //     this.isGameActive = false;
     //     this.modeStats.gameComplete = true;
     //     this.modeStats.gameWon = won;
-        
+
     //     const mode = this.modes[this.currentMode];
     //     const gameTime = (Date.now() - this.gameStartTime) / 1000;
-        
+
     //     this.showGameEndScreen(won, gameTime, customMessage);
     //     console.log(`GameModeManager: Game ended - ${won ? 'WON' : 'LOST'} in ${gameTime.toFixed(1)}s`);
     // }
@@ -383,16 +387,16 @@ class GameModeManager {
         this.isGameActive = false;
         this.modeStats.gameComplete = true;
         this.modeStats.gameWon = won;
-        
+
         const mode = this.modes[this.currentMode];
         const gameTime = (Date.now() - this.gameStartTime) / 1000;
-        
+
         // Check for high score and get stats
         let finalScore, finalAttempts, finalMade, finalAccuracy;
-        
+
         if (mode.isTwoPlayer) {
             // For two-player mode, use the winning player's stats
-            const winningPlayer = this.twoPlayerStats.player1.shotsMade >= mode.targetScore ? 
+            const winningPlayer = this.twoPlayerStats.player1.shotsMade >= mode.targetScore ?
                 this.twoPlayerStats.player1 : this.twoPlayerStats.player2;
             finalScore = winningPlayer.score;
             finalAttempts = winningPlayer.shotAttempts;
@@ -405,7 +409,7 @@ class GameModeManager {
             finalMade = this.getCurrentStats().shotsMade;
             finalAccuracy = finalAttempts > 0 ? Math.round((finalMade / finalAttempts) * 100) : 0;
         }
-        
+
         // Check if it's a high score (only for won games or completed challenges)
         if ((won || mode.hasTimer || mode.hasShootLimit) && window.leaderboardManager) {
             if (window.leaderboardManager.isHighScore(mode.name, finalScore)) {
@@ -417,11 +421,11 @@ class GameModeManager {
                 return; // Don't show game end screen immediately
             }
         }
-        
+
         this.showGameEndScreen(won, gameTime, customMessage);
         console.log(`GameModeManager: Game ended - ${won ? 'WON' : 'LOST'} in ${gameTime.toFixed(1)}s`);
     }
-//********************************************************** */
+    //********************************************************** */
     getCurrentStats() {
         // You'll need to pass the main stats object to GameModeManager
         // For now, we'll access it globally - you can improve this later
@@ -430,7 +434,7 @@ class GameModeManager {
 
     showGameEndScreen(won, gameTime, customMessage = null) {
         const mode = this.modes[this.currentMode];
-        
+
         const endScreen = document.createElement('div');
         endScreen.style.cssText = `
             position: fixed;
@@ -447,20 +451,20 @@ class GameModeManager {
             border: 3px solid ${won ? '#4CAF50' : '#f44336'};
             backdrop-filter: blur(10px);
         `;
-        
+
         let resultText = customMessage || (won ? '🎉 VICTORY! 🎉' : '😞 GAME OVER 😞');
         let timeText = mode.hasTimer ? `Time: ${gameTime.toFixed(1)}s` : '';
-        
+
         // Add final stats for TWO_PLAYER mode
         let finalStatsText = '';
         if (mode.isTwoPlayer) {
-            const p1Accuracy = this.twoPlayerStats.player1.shotAttempts > 0 
-                ? Math.round((this.twoPlayerStats.player1.shotsMade / this.twoPlayerStats.player1.shotAttempts) * 100) 
+            const p1Accuracy = this.twoPlayerStats.player1.shotAttempts > 0
+                ? Math.round((this.twoPlayerStats.player1.shotsMade / this.twoPlayerStats.player1.shotAttempts) * 100)
                 : 0;
-            const p2Accuracy = this.twoPlayerStats.player2.shotAttempts > 0 
-                ? Math.round((this.twoPlayerStats.player2.shotsMade / this.twoPlayerStats.player2.shotAttempts) * 100) 
+            const p2Accuracy = this.twoPlayerStats.player2.shotAttempts > 0
+                ? Math.round((this.twoPlayerStats.player2.shotsMade / this.twoPlayerStats.player2.shotAttempts) * 100)
                 : 0;
-            
+
             finalStatsText = `
                 <div style="margin: 20px 0; text-align: left; max-width: 300px;">
                     <h4 style="color: #4CAF50; margin-bottom: 10px;">Final Statistics:</h4>
@@ -473,7 +477,7 @@ class GameModeManager {
                 </div>
             `;
         }
-        
+
         endScreen.innerHTML = `
             <h2 style="margin: 0 0 20px 0; color: ${won ? '#4CAF50' : '#f44336'};">${resultText}</h2>
             <div style="font-size: 18px; margin-bottom: 20px;">${mode.name} Complete!</div>
@@ -492,9 +496,9 @@ class GameModeManager {
                 </button>
             </div>
         `;
-        
+
         document.body.appendChild(endScreen);
-        
+
         // Auto-remove after 15 seconds
         setTimeout(() => {
             if (endScreen.parentNode) {
@@ -505,27 +509,27 @@ class GameModeManager {
 
     updateGameUI() {
         if (!this.gameUI || !this.isGameActive) return;
-        
+
         const mode = this.modes[this.currentMode];
         let html = `
             <div style="font-weight: bold; color: #4CAF50; margin-bottom: 10px;">
                 ${mode.icon} ${mode.name}
             </div>
         `;
-        
+
         // Mode-specific UI
         switch (this.currentMode) {
             case 'TIMED_CHALLENGE':
                 html += `<div>⏰ Time: ${Math.ceil(this.modeStats.timeRemaining)}s</div>`;
                 break;
-                
+
             case 'SHOT_LIMIT':
                 html += `
                     <div>🎯 Target: ${mode.targetScore} shots</div>
                     <div>📊 Remaining: ${this.modeStats.shotsRemaining} attempts</div>
                 `;
                 break;
-                
+
             case 'TWO_PLAYER':
                 const currentPlayerStyle = this.twoPlayerStats.waitingForTurn ? 'color: #999;' : 'color: #4CAF50; font-weight: bold;';
                 html += `
@@ -536,58 +540,58 @@ class GameModeManager {
                         👤 Player 2: ${this.twoPlayerStats.player2.shotsMade}/${mode.targetScore}
                     </div>
                     <div style="margin-top: 5px; font-size: 14px;">
-                        ${this.twoPlayerStats.waitingForTurn ? 
-                            '⏳ Waiting for ball to stop...' : 
-                            `🎯 Player ${this.twoPlayerStats.currentPlayer}'s Turn`}
+                        ${this.twoPlayerStats.waitingForTurn ?
+                        '⏳ Waiting for ball to stop...' :
+                        `🎯 Player ${this.twoPlayerStats.currentPlayer}'s Turn`}
                     </div>
                 `;
                 break;
         }
-        
+
         html += `<div style="margin-top: 10px; font-size: 12px; color: #999;">Press 'M' for modes</div>`;
-        
+
         this.gameUI.innerHTML = html;
     }
 
     // Called when shot is attempted (for turn switching in 2-player mode)
     onShotAttempted() {
         if (!this.isGameActive) return;
-        
+
         const mode = this.modes[this.currentMode];
-        
+
         // Handle two-player mode - just mark that we're waiting for ball to stop
         if (mode.isTwoPlayer && !this.twoPlayerStats.waitingForTurn) {
             this.twoPlayerStats.waitingForTurn = true;
             console.log(`GameModeManager: Waiting for ball to stop before switching turns...`);
         }
-        
+
         console.log("GameModeManager: Shot attempted");
     }
 
     // Called when shot is made
     onShotMade() {
         if (!this.isGameActive) return;
-        
+
         console.log("GameModeManager: Shot made");
     }
 
     // Called when ball has stopped moving (for 2-player turn switching)
     onBallStopped() {
         if (!this.isGameActive) return;
-        
+
         const mode = this.modes[this.currentMode];
-        
+
         // Handle two-player mode turn switching when ball stops
         if (mode.isTwoPlayer && this.twoPlayerStats.waitingForTurn) {
             // Switch turns now that ball has stopped
             this.twoPlayerStats.currentPlayer = this.twoPlayerStats.currentPlayer === 1 ? 2 : 1;
             this.twoPlayerStats.waitingForTurn = false;
-            
+
             // Reset ball to center for next player's turn
             if (this.onResetBall) {
                 this.onResetBall();
             }
-            
+
             console.log(`GameModeManager: Ball stopped. Now Player ${this.twoPlayerStats.currentPlayer}'s turn`);
         }
     }
@@ -597,12 +601,12 @@ class GameModeManager {
         this.isGameActive = false;
         this.modeSelector.style.display = 'block';
         this.gameUI.style.display = 'none';
-        
+
         // Hide game UI elements (scoreboard, controls) when in mode selection
         if (this.onHideUI) {
             this.onHideUI();
         }
-        
+
         // Clear any end screens
         const endScreens = document.querySelectorAll('[style*="z-index: 2500"]');
         endScreens.forEach(screen => screen.remove());
@@ -612,17 +616,17 @@ class GameModeManager {
         // Clear any end screens
         const endScreens = document.querySelectorAll('[style*="z-index: 2500"]');
         endScreens.forEach(screen => screen.remove());
-        
+
         // Reset stats when restarting
         if (this.onResetStats) {
             this.onResetStats();
         }
-        
+
         // Reset ball to center when restarting
         if (this.onResetBall) {
             this.onResetBall();
         }
-        
+
         this.initializeMode(this.currentMode);
         this.startGame();
     }
@@ -640,6 +644,7 @@ class GameModeManager {
     handleKeyPress(key) {
         if (key.toLowerCase() === 'm') {
             this.showModeSelector();
+            this.this.applyModeSelectorScale();
             return true; // Indicate key was handled
         }
         return false;
@@ -655,6 +660,27 @@ class GameModeManager {
         }
         console.log("GameModeManager: Disposed");
     }
+
+    applyModeSelectorScale = () => {
+        if (!this.modeSelector) return;
+
+        // 1) Measure the element at natural size
+        this.modeSelector.style.transform = 'translate(-50%, -50%) scale(1)';
+
+        // 2) Compute available height and needed scale
+        // availableHeight = window.innerHeight * 0.8
+        const availableHeight = window.innerHeight * 0.8;
+
+        // selectorHeight = element's current pixel height (at scale 1)
+        const selectorHeight = this.modeSelector.getBoundingClientRect().height;
+
+        // scale = min(1, availableHeight / selectorHeight)
+        const scale = Math.min(1, availableHeight / selectorHeight);
+
+        // 3) Apply final transform
+        this.modeSelector.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    };
+
 }
 
 export default GameModeManager;
