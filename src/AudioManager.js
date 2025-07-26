@@ -11,7 +11,7 @@ class AudioManager {
         
         // Fixed volume levels (no user controls)
         this.sfxVolume = 0.7;      // Sound effects volume
-        this.musicVolume = 0.15;   // Background music volume (low but audible)
+        this.musicVolume = 0.25;   // Background music volume (low but audible)
         
         this.init();
     }

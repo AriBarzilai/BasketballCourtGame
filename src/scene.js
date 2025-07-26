@@ -1,5 +1,6 @@
 import * as utils from './utils.js'
 import * as gui from './Gui.js'
+import stats from './Gui.js'
 import { OrbitControls } from './OrbitControls.js'
 import { BasketballCourt } from './Scene/BasketBallCourt.js'
 import { Basketball } from './Scene/Basketball.js';
@@ -8,6 +9,40 @@ import PlayerControls from './PlayerControls.js'
 import { initPlayerDirectionArrow } from './Scene/playerVFX.js';
 import AudioManager from './AudioManager.js'
 import BasketballTrailEffect from './BasketballTrailEffect.js'
+import GameModeManager from './GameModeManager.js'
+
+function resetGameStats() {
+  stats.shotsMade = 0;
+  stats.shotAttempts = 0;
+  stats.playerScore = 0;
+  
+  previousStats = {
+    shotsMade: 0,
+    shotAttempts: 0
+  };
+  
+  console.log("Game stats reset");
+}
+
+function resetBallToCenter() {
+  // Reset ball to center court
+  playerControls.resetBall();
+  console.log("Ball reset to center");
+}
+
+function hideGameUI() {
+  // Hide the scoreboard and controls when mode selector is shown
+  uiFramework.mainContainer.style.display = 'none';
+  console.log("Game UI hidden");
+}
+
+function showGameUI() {
+  // Show the scoreboard and controls when game starts
+  if (isUIVisible) {
+    uiFramework.mainContainer.style.display = 'block';
+  }
+  console.log("Game UI shown");
+}
 
 const CLOCK = new THREE.Clock()
 
@@ -84,6 +119,20 @@ const playerDirArrow = initPlayerDirectionArrow(basketballData)
 scene.add(playerDirArrow)
 
 ///////////////////////////////////////////////
+// GAME MODE MANAGER - ADD THIS SECTION
+///////////////////////////////////////////////
+
+const gameModeManager = new GameModeManager(audioManager, resetGameStats, resetBallToCenter, hideGameUI, showGameUI);
+
+// Track previous stats for change detection
+let previousStats = {
+  shotsMade: 0,
+  shotAttempts: 0
+};
+
+let previousBallState = { throwedBall: false };
+
+///////////////////////////////////////////////
 // CAMERA / CONTROLS / UI
 ///////////////////////////////////////////////
 
@@ -116,6 +165,10 @@ let isUIVisible = true;
 function handleKeyDown(e) {
   initializeAudioOnFirstInteraction();
   const key = e.key.toLowerCase();
+  if (gameModeManager.handleKeyPress(key)) {
+    return; // GameModeManager handled the key
+  }
+  
   if (key === "h") {
     // Toggle UI visibility
     isUIVisible = !isUIVisible;
@@ -146,8 +199,12 @@ function handleKeyDown(e) {
   }
 
   if (key === 'r') {
-    playerControls.resetBall();
-
+    // Only allow reset in free mode
+    if (gameModeManager.isInFreeMode() || !gameModeManager.isGameActive) {
+      playerControls.resetBall();
+    } else {
+      console.log("Cannot reset ball during active game mode");
+    }
   }
 
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
@@ -188,8 +245,43 @@ function update() {
   // Update controls
   controls.enabled = isOrbitEnabled;
   controls.update();
+
+   // Track ball state for 2-player mode turn switching
+   const wasBallThrown = previousBallState?.throwedBall || false;
+   const isBallThrown = playerControls.moveStates.throwedBall;
+
   // Update player controls
   playerControls.update(deltaTime);
+
+  // Detect when ball stops moving (for 2-player turn switching)
+  if (wasBallThrown && !isBallThrown) {
+    // Ball just stopped moving
+    gameModeManager.onBallStopped();
+  }
+
+  if (stats.shotAttempts > previousStats.shotAttempts) {
+    gameModeManager.onShotAttempted();
+  }
+  if (stats.shotsMade > previousStats.shotsMade) {
+    gameModeManager.onShotMade();
+  }
+  // Update GameModeManager with current stats
+  gameModeManager.update(deltaTime, {
+    shotsMade: stats.shotsMade,
+    shotAttempts: stats.shotAttempts,
+    playerScore: stats.playerScore
+  });
+  // Remember current stats for next frame
+  previousStats = {
+    shotsMade: stats.shotsMade,
+    shotAttempts: stats.shotAttempts
+  };
+
+  // Remember ball state for next frame
+  previousBallState = {
+    throwedBall: isBallThrown
+  };
+
   // Update trail effect
   if (playerControls.moveStates.throwedBall) {
     basketballTrail.update();
@@ -219,6 +311,7 @@ window.addEventListener('resize', handleResize);
 // Cleanup on unload
 window.addEventListener('beforeunload', () => {
   audioManager.cleanup();
+  gameModeManager.dispose();
 });
 
 // Start the application

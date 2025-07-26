@@ -288,16 +288,19 @@ class PlayerControls {
                 // 2) reflect velocity
                 this.currVelocity.reflect(normal)
                     .multiplyScalar(this.RESTITUTION);
-                // 3) mark backboard hit for feedback
-                if (part.name === 'backboard') {
-                    // Ball hit backboard = too strong
-                    this.feedbackManager.markBackboardHit();
-                } else if (part.name === 'pole' || part.name === 'support' || part.name.includes('pole') || part.name.includes('support')) {
-                    // Ball hit pole/support = too weak (ball was too low)
-                    this.feedbackManager.markPoleHit();
-                } else {
-                    // Other hoop parts - default to backboard logic
-                    this.feedbackManager.markBackboardHit();
+                
+                // 3) mark backboard hit for feedback - BUT ONLY IF NOT SCORED!
+                if (!this.hasScoredThisThrow) {  // ADD THIS CHECK
+                    if (part.name === 'backboard') {
+                        // Ball hit backboard = too strong
+                        this.feedbackManager.markBackboardHit();
+                    } else if (part.name === 'pole' || part.name === 'support' || part.name.includes('pole') || part.name.includes('support')) {
+                        // Ball hit pole/support = too weak (ball was too low)
+                        this.feedbackManager.markPoleHit();
+                    } else {
+                        // Other hoop parts - default to backboard logic
+                        this.feedbackManager.markBackboardHit();
+                    }
                 }
 
                 // 4) apply audio 
