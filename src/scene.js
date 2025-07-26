@@ -20,7 +20,7 @@ function resetGameStats() {
     shotsMade: 0,
     shotAttempts: 0
   };
-  
+  gui.updateStatistics(gameModeManager);
   console.log("Game stats reset");
 }
 
@@ -287,9 +287,12 @@ function update() {
     basketballTrail.update();
   }
   // Update camera diagnostics
-  gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, playerControls, isUIVisible, isDiagnosticsEnabled);
-  gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled)
-  gui.updateStatistics()
+  // gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, playerControls, isUIVisible, isDiagnosticsEnabled);
+  // gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled)
+  // gui.updateStatistics()
+  gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, playerControls, isUIVisible, isDiagnosticsEnabled, gameModeManager);
+  gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled, gameModeManager);
+  gui.updateStatistics(gameModeManager);
 }
 
 // Animation function

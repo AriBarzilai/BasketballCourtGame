@@ -1,4 +1,5 @@
-// GameModeManager.js
+
+// GameModeManager.js - Enhanced version with separate player statistics
 class GameModeManager {
     constructor(audioManager, onResetStats, onResetBall, onHideUI, onShowUI) {
         this.audioManager = audioManager;
@@ -62,12 +63,26 @@ class GameModeManager {
             gameWon: false
         };
         
-        // Two-player mode tracking
+        // Enhanced two-player mode tracking with separate statistics
         this.twoPlayerStats = {
             currentPlayer: 1, // 1 or 2
-            player1Score: 0,
-            player2Score: 0,
-            waitingForTurn: false
+            waitingForTurn: false,
+            player1: {
+                score: 0,
+                shotAttempts: 0,
+                shotsMade: 0
+            },
+            player2: {
+                score: 0,
+                shotAttempts: 0,
+                shotsMade: 0
+            }
+        };
+        
+        // Track previous global stats to detect changes
+        this.previousGlobalStats = {
+            shotAttempts: 0,
+            shotsMade: 0
         };
         
         // UI Elements
@@ -227,12 +242,26 @@ class GameModeManager {
             gameWon: false
         };
         
-        // Reset two-player stats
+        // Reset two-player stats with separate statistics
         this.twoPlayerStats = {
             currentPlayer: 1,
-            player1Score: 0,
-            player2Score: 0,
-            waitingForTurn: false
+            waitingForTurn: false,
+            player1: {
+                score: 0,
+                shotAttempts: 0,
+                shotsMade: 0
+            },
+            player2: {
+                score: 0,
+                shotAttempts: 0,
+                shotsMade: 0
+            }
+        };
+        
+        // Reset previous stats tracking
+        this.previousGlobalStats = {
+            shotAttempts: 0,
+            shotsMade: 0
         };
         
         this.timer = 0;
@@ -274,12 +303,45 @@ class GameModeManager {
                 return;
             }
         }
+
+        // Handle TWO_PLAYER mode stat tracking
+        if (mode.isTwoPlayer) {
+            this.updateTwoPlayerStats(gameStats);
+        }
         
         // Check win conditions
         this.checkWinConditions(gameStats);
         
         // Update UI
         this.updateGameUI();
+    }
+
+    // Update individual player statistics in TWO_PLAYER mode
+    updateTwoPlayerStats(gameStats) {
+        const currentPlayerStats = this.twoPlayerStats.currentPlayer === 1 
+            ? this.twoPlayerStats.player1 
+            : this.twoPlayerStats.player2;
+
+        // Detect new attempts for current player
+        if (gameStats.shotAttempts > this.previousGlobalStats.shotAttempts) {
+            const newAttempts = gameStats.shotAttempts - this.previousGlobalStats.shotAttempts;
+            currentPlayerStats.shotAttempts += newAttempts;
+            console.log(`Player ${this.twoPlayerStats.currentPlayer} attempted ${newAttempts} shot(s). Total: ${currentPlayerStats.shotAttempts}`);
+        }
+
+        // Detect new made shots for current player
+        if (gameStats.shotsMade > this.previousGlobalStats.shotsMade) {
+            const newMadeShots = gameStats.shotsMade - this.previousGlobalStats.shotsMade;
+            currentPlayerStats.shotsMade += newMadeShots;
+            currentPlayerStats.score += newMadeShots * 2; // 2 points per basket
+            console.log(`Player ${this.twoPlayerStats.currentPlayer} made ${newMadeShots} shot(s). Total: ${currentPlayerStats.shotsMade}`);
+        }
+
+        // Update previous stats for next frame
+        this.previousGlobalStats = {
+            shotAttempts: gameStats.shotAttempts,
+            shotsMade: gameStats.shotsMade
+        };
     }
 
     checkWinConditions(gameStats) {
@@ -297,17 +359,13 @@ class GameModeManager {
                 
             case 'TWO_PLAYER':
                 // Handle two-player win condition
-                if (this.twoPlayerStats.player1Score >= mode.targetScore) {
+                if (this.twoPlayerStats.player1.shotsMade >= mode.targetScore) {
                     this.endGame(true, "Player 1 Wins!");
-                } else if (this.twoPlayerStats.player2Score >= mode.targetScore) {
+                } else if (this.twoPlayerStats.player2.shotsMade >= mode.targetScore) {
                     this.endGame(true, "Player 2 Wins!");
                 }
                 break;
         }
-        
-        // Remember stats for next frame
-        this.lastShotsMade = gameStats.shotsMade;
-        this.lastShotAttempts = gameStats.shotAttempts;
     }
 
     endGame(won, customMessage = null) {
@@ -345,10 +403,34 @@ class GameModeManager {
         let resultText = customMessage || (won ? '🎉 VICTORY! 🎉' : '😞 GAME OVER 😞');
         let timeText = mode.hasTimer ? `Time: ${gameTime.toFixed(1)}s` : '';
         
+        // Add final stats for TWO_PLAYER mode
+        let finalStatsText = '';
+        if (mode.isTwoPlayer) {
+            const p1Accuracy = this.twoPlayerStats.player1.shotAttempts > 0 
+                ? Math.round((this.twoPlayerStats.player1.shotsMade / this.twoPlayerStats.player1.shotAttempts) * 100) 
+                : 0;
+            const p2Accuracy = this.twoPlayerStats.player2.shotAttempts > 0 
+                ? Math.round((this.twoPlayerStats.player2.shotsMade / this.twoPlayerStats.player2.shotAttempts) * 100) 
+                : 0;
+            
+            finalStatsText = `
+                <div style="margin: 20px 0; text-align: left; max-width: 300px;">
+                    <h4 style="color: #4CAF50; margin-bottom: 10px;">Final Statistics:</h4>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Player 1:</strong> ${this.twoPlayerStats.player1.shotsMade}/${this.twoPlayerStats.player1.shotAttempts} (${p1Accuracy}%)
+                    </div>
+                    <div>
+                        <strong>Player 2:</strong> ${this.twoPlayerStats.player2.shotsMade}/${this.twoPlayerStats.player2.shotAttempts} (${p2Accuracy}%)
+                    </div>
+                </div>
+            `;
+        }
+        
         endScreen.innerHTML = `
             <h2 style="margin: 0 0 20px 0; color: ${won ? '#4CAF50' : '#f44336'};">${resultText}</h2>
             <div style="font-size: 18px; margin-bottom: 20px;">${mode.name} Complete!</div>
             ${timeText ? `<div style="font-size: 16px; margin-bottom: 15px;">${timeText}</div>` : ''}
+            ${finalStatsText}
             <div style="margin-bottom: 20px;">
                 <button onclick="window.gameModeManager.restartGame()" style="
                     background: #4CAF50; color: white; border: none; padding: 10px 20px;
@@ -365,12 +447,12 @@ class GameModeManager {
         
         document.body.appendChild(endScreen);
         
-        // Auto-remove after 10 seconds
+        // Auto-remove after 15 seconds
         setTimeout(() => {
             if (endScreen.parentNode) {
                 endScreen.parentNode.removeChild(endScreen);
             }
-        }, 10000);
+        }, 15000);
     }
 
     updateGameUI() {
@@ -400,10 +482,10 @@ class GameModeManager {
                 const currentPlayerStyle = this.twoPlayerStats.waitingForTurn ? 'color: #999;' : 'color: #4CAF50; font-weight: bold;';
                 html += `
                     <div style="${this.twoPlayerStats.currentPlayer === 1 ? currentPlayerStyle : ''}">
-                        👤 Player 1: ${this.twoPlayerStats.player1Score}/${mode.targetScore}
+                        👤 Player 1: ${this.twoPlayerStats.player1.shotsMade}/${mode.targetScore}
                     </div>
                     <div style="${this.twoPlayerStats.currentPlayer === 2 ? currentPlayerStyle : ''}">
-                        👤 Player 2: ${this.twoPlayerStats.player2Score}/${mode.targetScore}
+                        👤 Player 2: ${this.twoPlayerStats.player2.shotsMade}/${mode.targetScore}
                     </div>
                     <div style="margin-top: 5px; font-size: 14px;">
                         ${this.twoPlayerStats.waitingForTurn ? 
@@ -437,18 +519,6 @@ class GameModeManager {
     // Called when shot is made
     onShotMade() {
         if (!this.isGameActive) return;
-        
-        const mode = this.modes[this.currentMode];
-        
-        // Handle two-player mode scoring
-        if (mode.isTwoPlayer) {
-            if (this.twoPlayerStats.currentPlayer === 1) {
-                this.twoPlayerStats.player1Score++;
-            } else {
-                this.twoPlayerStats.player2Score++;
-            }
-            console.log(`GameModeManager: Player ${this.twoPlayerStats.currentPlayer} scored!`);
-        }
         
         console.log("GameModeManager: Shot made");
     }

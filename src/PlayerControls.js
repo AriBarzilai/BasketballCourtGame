@@ -251,7 +251,7 @@ class PlayerControls {
                 if (horizDist < RIM_RADIUS - ballRadius) {
                     if (!this.hasScoredThisThrow && this.currVelocity.y < 0) {
                         stats.shotsMade += 1;
-                        stats.playerScore += 100;
+                        stats.playerScore += 3;
                         this.hasScoredThisThrow = true;
 
                         this.feedbackManager.showSuccessfulShot();

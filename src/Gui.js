@@ -1,8 +1,11 @@
+
+// Updated stats object - simplified to work with GameModeManager
 const stats = {
     playerScore: 0,
     shotAttempts: 0,
     shotsMade: 0
 };
+
 export default stats;
 
 function createScoreContainer(document) {
@@ -10,35 +13,26 @@ function createScoreContainer(document) {
     container.id = 'score-container';
     container.className = 'score-container';
 
-    // Create main title (spans across the top)
+    // Create main title
     const mainTitle = document.createElement('h2');
-    mainTitle.textContent = 'Game Dashboard';
+    mainTitle.id = 'main-title';
     mainTitle.className = 'main-title';
-
+    
     // Create the content area
     const horizontalContent = document.createElement('div');
+    horizontalContent.id = 'horizontal-content';
     horizontalContent.className = 'horizontal-content';
 
-    // LEFT SIDE: Score section
-    const scoreSection = document.createElement('div');
-    scoreSection.className = 'score-section';
+    // LEFT SIDE: Player vs Player section (only for TWO_PLAYER mode)
+    const vsSection = document.createElement('div');
+    vsSection.id = 'vs-section';
+    vsSection.className = 'vs-section';
 
-    const scoreDisplay = document.createElement('div');
-    scoreDisplay.id = 'score-display';
-    scoreDisplay.className = 'score-display';
-    scoreDisplay.innerHTML = `
-        <div class="team-score">
-            <span class="team-name">Player</span>
-            <span class="score-value" id="player-score">${stats.playerScore}</span>
-        </div>
-        <div class="score-separator">-</div>
-        <div class="team-score">
-            <span class="team-name">Computer</span>
-            <span class="score-value" id="computer-score">0</span>
-        </div>
-    `;
+    const vsDisplay = document.createElement('div');
+    vsDisplay.id = 'vs-display';
+    vsDisplay.className = 'vs-display';
 
-    // RIGHT SIDE: Statistics section
+    // RIGHT SIDE: Current player statistics
     const statisticsSection = document.createElement('div');
     statisticsSection.id = 'statistics-section';
     statisticsSection.className = 'statistics-section';
@@ -46,35 +40,13 @@ function createScoreContainer(document) {
     const statisticsDisplay = document.createElement('div');
     statisticsDisplay.id = 'statistics-display';
     statisticsDisplay.className = 'statistics-display';
-    statisticsDisplay.innerHTML = `
-        <div class="stat-row">
-            <div class="stat-item compact">
-                <span class="stat-label">Score:</span>
-                <span class="stat-value" id="total-score">${stats.playerScore}</span>
-            </div>
-            <div class="stat-item compact">
-                <span class="stat-label">Attempts:</span>
-                <span class="stat-value" id="shot-attempts">${stats.shotAttempts}</span>
-            </div>
-        </div>
-        <div class="stat-row">
-            <div class="stat-item compact">
-                <span class="stat-label">Made:</span>
-                <span class="stat-value" id="shots-made">${stats.shotsMade}</span>
-            </div>
-            <div class="stat-item compact">
-                <span class="stat-label">Accuracy:</span>
-                <span class="stat-value" id="shooting-percentage">0%</span>
-            </div>
-        </div>
-    `;
 
     // Assemble the sections
-    scoreSection.appendChild(scoreDisplay); ``
+    vsSection.appendChild(vsDisplay);
     statisticsSection.appendChild(statisticsDisplay);
 
-    horizontalContent.appendChild(scoreSection);
-    horizontalContent.appendChild(statisticsSection);
+    horizontalContent.appendChild(vsSection);
+    horizontalContent.appendChild(statisticsDisplay);
 
     container.appendChild(mainTitle);
     container.appendChild(horizontalContent);
@@ -82,23 +54,173 @@ function createScoreContainer(document) {
     return container;
 }
 
-function updateStatistics() {
-    // Update the DOM elements
-    document.getElementById('total-score').textContent = stats.playerScore;
-    document.getElementById('shot-attempts').textContent = stats.shotAttempts;
-    document.getElementById('shots-made').textContent = stats.shotsMade;
+function updateScoreboardDisplay(container, gameModeManager = null) {
+    const mainTitle = container.querySelector('#main-title');
+    const horizontalContent = container.querySelector('#horizontal-content');
+    const vsSection = container.querySelector('#vs-section');
+    const vsDisplay = container.querySelector('#vs-display');
+    const statisticsDisplay = container.querySelector('#statistics-display');
 
-    // Calculate and update shooting percentage
-    let shootingPercentage = 0;
-    if (stats.shotAttempts > 0) {
-        shootingPercentage = Math.round((stats.shotsMade / stats.shotAttempts) * 100);
+    // Get current mode info from GameModeManager
+    const isTwoPlayerMode = gameModeManager && gameModeManager.getCurrentMode().isTwoPlayer;
+    const currentMode = gameModeManager ? gameModeManager.getCurrentMode() : null;
+
+    if (isTwoPlayerMode && gameModeManager) {
+        // TWO_PLAYER mode - show separate stats for each player
+        const twoPlayerStats = gameModeManager.twoPlayerStats;
+        const currentPlayer = twoPlayerStats.currentPlayer;
+        
+        mainTitle.textContent = `${currentMode.name} - Player ${currentPlayer}'s Turn`;
+        vsSection.style.display = 'block';
+        
+        // Restore the left border for statistics section
+        statisticsDisplay.style.borderLeft = '1px solid #444';
+        statisticsDisplay.style.paddingLeft = '20px';
+        
+        // Reset justify content
+        horizontalContent.style.justifyContent = 'space-between';
+
+        // Calculate individual player accuracies
+        const p1Accuracy = twoPlayerStats.player1.shotAttempts > 0 
+            ? Math.round((twoPlayerStats.player1.shotsMade / twoPlayerStats.player1.shotAttempts) * 100) 
+            : 0;
+        const p2Accuracy = twoPlayerStats.player2.shotAttempts > 0 
+            ? Math.round((twoPlayerStats.player2.shotsMade / twoPlayerStats.player2.shotAttempts) * 100) 
+            : 0;
+
+        // LEFT SIDE: Player 1's individual statistics
+        vsDisplay.innerHTML = `
+            <div class="player-stats-section ${currentPlayer === 1 ? 'active-player' : ''}">
+                <h4 class="player-title">Player 1</h4>
+                <div class="player-score">${twoPlayerStats.player1.score}</div>
+                <div class="player-detailed-stats">
+                    <div class="player-stat-item">
+                        <span class="stat-label">Attempts:</span>
+                        <span class="stat-value">${twoPlayerStats.player1.shotAttempts}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="stat-label">Made:</span>
+                        <span class="stat-value">${twoPlayerStats.player1.shotsMade}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="stat-label">Accuracy:</span>
+                        <span class="stat-value">${p1Accuracy}%</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // RIGHT SIDE: Player 2's individual statistics
+        statisticsDisplay.innerHTML = `
+            <div class="player-stats-section ${currentPlayer === 2 ? 'active-player' : ''}">
+                <h4 class="player-title">Player 2</h4>
+                <div class="player-score">${twoPlayerStats.player2.score}</div>
+                <div class="player-detailed-stats">
+                    <div class="player-stat-item">
+                        <span class="stat-label">Attempts:</span>
+                        <span class="stat-value">${twoPlayerStats.player2.shotAttempts}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="stat-label">Made:</span>
+                        <span class="stat-value">${twoPlayerStats.player2.shotsMade}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="stat-label">Accuracy:</span>
+                        <span class="stat-value">${p2Accuracy}%</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+    } else {
+        // All other modes (FREE_SHOOT, TIMED_CHALLENGE, SHOT_LIMIT) - show only statistics
+        const modeTitle = currentMode ? currentMode.name : 'Player Statistics';
+        mainTitle.textContent = modeTitle;
+        vsSection.style.display = 'none';
+        
+        // Remove the left border from statistics section
+        statisticsDisplay.style.borderLeft = 'none';
+        statisticsDisplay.style.paddingLeft = '0';
+        
+        // Center the statistics
+        horizontalContent.style.justifyContent = 'center';
+
+        const accuracy = stats.shotAttempts > 0 
+            ? Math.round((stats.shotsMade / stats.shotAttempts) * 100) 
+            : 0;
+
+        // Show mode-specific info if available
+        let modeSpecificInfo = '';
+        if (gameModeManager && gameModeManager.isGameActive) {
+            const modeStats = gameModeManager.modeStats;
+            const mode = gameModeManager.getCurrentMode();
+            
+            if (mode.hasTimer) {
+                modeSpecificInfo = `
+                    <div class="stat-row">
+                        <div class="stat-item compact mode-info">
+                            <span class="stat-label">⏰ Time Left:</span>
+                            <span class="stat-value">${Math.ceil(modeStats.timeRemaining)}s</span>
+                        </div>
+                    </div>
+                `;
+            } else if (mode.hasShootLimit) {
+                modeSpecificInfo = `
+                    <div class="stat-row">
+                        <div class="stat-item compact mode-info">
+                            <span class="stat-label">🎯 Shots Left:</span>
+                            <span class="stat-value">${modeStats.shotsRemaining}</span>
+                        </div>
+                        <div class="stat-item compact mode-info">
+                            <span class="stat-label">Target:</span>
+                            <span class="stat-value">${mode.targetScore}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        statisticsDisplay.innerHTML = `
+            ${modeSpecificInfo}
+            <div class="stat-row">
+                <div class="stat-item compact">
+                    <span class="stat-label">Score:</span>
+                    <span class="stat-value" id="total-score">${stats.playerScore}</span>
+                </div>
+                <div class="stat-item compact">
+                    <span class="stat-label">Attempts:</span>
+                    <span class="stat-value" id="shot-attempts">${stats.shotAttempts}</span>
+                </div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-item compact">
+                    <span class="stat-label">Made:</span>
+                    <span class="stat-value" id="shots-made">${stats.shotsMade}</span>
+                </div>
+                <div class="stat-item compact">
+                    <span class="stat-label">Accuracy:</span>
+                    <span class="stat-value" id="shooting-percentage">${accuracy}%</span>
+                </div>
+            </div>
+        `;
     }
-    document.getElementById('shooting-percentage').textContent = `${shootingPercentage}%`;
+}
+
+// Simplified update function that works with existing stats
+function updateStatistics(gameModeManager = null) {
+    const container = document.getElementById('score-container');
+    if (container) {
+        updateScoreboardDisplay(container, gameModeManager);
+    }
 }
 
 // Reset statistics
 function resetStatistics() {
-    updateStatistics(0, 0, 0);
+    stats.playerScore = 0;
+    stats.shotAttempts = 0;
+    stats.shotsMade = 0;
+    
+    updateStatistics();
 }
 
 function createEnhancedControlsContainer(document) {
@@ -141,7 +263,7 @@ function createDiagnosticsInfoContainer(document) {
 }
 
 // Updates the enhanced controls display based on current state
-function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiagnosticsEnabled) {
+function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiagnosticsEnabled, gameModeManager = null) {
     const controlsList = controlsContainer.querySelector('#enhanced-controls-list');
 
     const currentControls = `
@@ -170,8 +292,27 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
         </div>
     `;
 
-    // Play controls
-    const playControls = `
+    // Game mode controls
+    const gameModeControls = `
+        <div class="control-section current-controls">
+            <h4>Game Mode:</h4>
+            <div class="control-item">
+                <span class="control-key">M</span>
+                <span class="control-desc">Change Game Mode</span>
+            </div>
+            ${gameModeManager ? `
+            <div class="control-item">
+                <span class="mode-indicator">${gameModeManager.getCurrentMode().icon} ${gameModeManager.getCurrentMode().name}</span>
+            </div>` : ''}
+        </div>
+    `;
+
+    // Play controls - different for two-player mode
+    const isTwoPlayerMode = gameModeManager && gameModeManager.getCurrentMode().isTwoPlayer;
+    const isGameActive = gameModeManager && gameModeManager.isGameActive;
+    const isInFreeMode = gameModeManager && gameModeManager.isInFreeMode();
+    
+    let playControls = `
         <div class="control-section current-controls">
             <h4>Ball Controls:</h4>
             <div class="control-item">
@@ -186,17 +327,31 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
                 <span class="control-key">Space</span>
                 <span class="control-desc">Launch ball toward hoop</span>
             </div>
+    `;
+
+    // Reset control - only available in free mode or when game is not active
+    if (isInFreeMode || !isGameActive) {
+        playControls += `
             <div class="control-item">
                 <span class="control-key">R</span>
                 <span class="control-desc">Reset ball to center</span>
             </div>
-        </div>
-    `;
-    controlsList.innerHTML = currentControls + playControls;
+        `;
+    } else if (isTwoPlayerMode) {
+        playControls += `
+            <div class="control-item">
+                <span class="control-note">Ball resets automatically after each turn</span>
+            </div>
+        `;
+    }
+
+    playControls += `</div>`;
+    
+    controlsList.innerHTML = currentControls + gameModeControls + playControls;
 }
 
 // Display diagnostics such as camera position/direction, ball position, etc.
-function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, basketball, playerControls, isUIVisible, isDiagnosticsEnabled) {
+function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, basketball, playerControls, isUIVisible, isDiagnosticsEnabled, gameModeManager = null) {
     // Camera position
     const cameraPos = camera.position;
     // Camera facing direction (normalized vector)
@@ -208,7 +363,12 @@ function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, basketball, pla
     // Format numbers to 2 decimals
     function fmt(v) { return v.toFixed(2); }
 
+    const gameMode = gameModeManager ? gameModeManager.getCurrentMode().name : 'Unknown';
+    const isGameActive = gameModeManager ? gameModeManager.isGameActive : false;
+
     diagnosticsInfoContainer.innerHTML =
+        `<b>Game Mode:</b> ${gameMode}<br/>` +
+        `<b>Game Active:</b> ${isGameActive}<br/>` +
         `<b>Camera Position:</b> (${fmt(cameraPos.x)}, ${fmt(cameraPos.y)}, ${fmt(cameraPos.z)})<br/>` +
         `<b>Camera Facing:</b> (${fmt(cameraFacing.x)}, ${fmt(cameraFacing.y)}, ${fmt(cameraFacing.z)})<br/>` +
         `<b>Basketball Position:</b> (${fmt(basketballPos.x)}, ${fmt(basketballPos.y)}, ${fmt(basketballPos.z)})<br/>` +
@@ -234,15 +394,13 @@ function createCompleteUIFramework(document) {
     mainContainer.appendChild(controlsContainer);
     mainContainer.appendChild(diagnosticsInfoContainer);
 
-
     return {
-        mainContainer: mainContainer
-        , scoreContainer: scoreContainer
-        , controlsContainer: controlsContainer
-        , diagnosticsInfoContainer: diagnosticsInfoContainer
+        mainContainer: mainContainer,
+        scoreContainer: scoreContainer,
+        controlsContainer: controlsContainer,
+        diagnosticsInfoContainer: diagnosticsInfoContainer
     };
 }
-
 
 function addUIFrameworkStyles(document) {
     const style = document.createElement('style');
@@ -302,19 +460,19 @@ function addUIFrameworkStyles(document) {
             gap: 20px;
         }
 
-        /* LEFT SIDE: Score Section */
-        .score-section {
+        /* LEFT SIDE: VS Section (TWO_PLAYER mode only) */
+        .vs-section {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
+            max-width: 50%;
         }
 
-        .score-display {
+        .vs-display {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
             width: 100%;
         }
 
@@ -322,6 +480,21 @@ function addUIFrameworkStyles(document) {
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .team-score.active-player {
+            transform: scale(1.1);
+        }
+
+        .team-score.active-player .team-name {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .team-score.active-player .score-value {
+            color: #4CAF50;
+            text-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
         }
 
         .team-name {
@@ -348,8 +521,17 @@ function addUIFrameworkStyles(document) {
         /* RIGHT SIDE: Statistics Section */
         .statistics-section {
             flex: 1;
-            border-left: 1px solid #444;
-            padding-left: 20px;
+            max-width: 50%;
+        }
+
+        .current-player-title {
+            margin: 0 0 8px 0;
+            font-size: 0.8em;
+            color: #4CAF50;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
         }
 
         .statistics-display {
@@ -376,6 +558,11 @@ function addUIFrameworkStyles(document) {
             min-width: 80px;
         }
 
+        .stat-item.compact.mode-info {
+            border-left: 2px solid #ff9800;
+            background: rgba(255, 152, 0, 0.1);
+        }
+
         .stat-label {
             font-size: 0.65em;
             color: #ccc;
@@ -392,6 +579,85 @@ function addUIFrameworkStyles(document) {
         /* Special styling for accuracy percentage */
         .stat-item.compact:last-child .stat-value {
             color: #ff9800;
+        }
+
+        /* Player Stats Section for TWO_PLAYER mode */
+        .player-stats-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid transparent;
+        }
+
+        .player-stats-section.active-player {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4CAF50;
+            transform: scale(1.02);
+        }
+
+        .player-title {
+            margin: 0 0 8px 0;
+            font-size: 0.9em;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .player-stats-section.active-player .player-title {
+            color: #4CAF50;
+        }
+
+        .player-score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .player-stats-section.active-player .player-score {
+            color: #4CAF50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .player-detailed-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .player-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            border-left: 2px solid #666;
+        }
+
+        .player-stats-section.active-player .player-stat-item {
+            border-left: 2px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .player-stat-item .stat-label {
+            font-size: 0.7em;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .player-stat-item .stat-value {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
         }
         
         /* Enhanced Controls Container */
@@ -474,6 +740,21 @@ function addUIFrameworkStyles(document) {
             font-size: 0.8em;
             line-height: 1.2;
         }
+
+        .control-note {
+            flex: 1;
+            font-size: 0.7em;
+            line-height: 1.2;
+            color: #999;
+            font-style: italic;
+        }
+
+        .mode-indicator {
+            flex: 1;
+            font-size: 0.8em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
         
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -490,7 +771,7 @@ function addUIFrameworkStyles(document) {
                 gap: 15px;
             }
             
-            .statistics-section {
+            .statistics-display {
                 padding-left: 15px;
             }
             
@@ -512,7 +793,7 @@ function addUIFrameworkStyles(document) {
                 gap: 8px;
             }
             
-            .statistics-section {
+            .statistics-display {
                 border-left: none;
                 border-top: 1px solid #444;
                 padding-left: 0;
