@@ -15,7 +15,7 @@ function resetGameStats() {
   stats.shotsMade = 0;
   stats.shotAttempts = 0;
   stats.playerScore = 0;
-  
+
   previousStats = {
     shotsMade: 0,
     shotAttempts: 0
@@ -168,7 +168,7 @@ function handleKeyDown(e) {
   if (gameModeManager.handleKeyPress(key)) {
     return; // GameModeManager handled the key
   }
-  
+
   if (key === "h") {
     // Toggle UI visibility
     isUIVisible = !isUIVisible;
@@ -201,10 +201,10 @@ function handleKeyDown(e) {
   if (key === 'r') {
     // Allow reset in free mode, when game is not active, OR during timed/shot limit challenges
     const currentMode = gameModeManager.getCurrentMode();
-    const isAllowedMode = gameModeManager.isInFreeMode() || 
-                         currentMode.name === 'Timed Challenge' || 
-                         currentMode.name === 'Shot Limit';
-    
+    const isAllowedMode = gameModeManager.isInFreeMode() ||
+      currentMode.name === 'Timed Challenge' ||
+      currentMode.name === 'Shot Limit';
+
     if (isAllowedMode || !gameModeManager.isGameActive) {
       playerControls.resetBall();
     } else {
@@ -221,11 +221,11 @@ function handleKeyDown(e) {
 
   if (key === ' ') {
     // Only allow ball throwing if game is active (or in free mode)
-  if (gameModeManager.isInFreeMode() || gameModeManager.isGameActive) {
-    playerControls.launchBall();
-  } else {
-    console.log("Cannot throw ball - game is over. Press 'M' to change modes or restart.");
-  }
+    if (gameModeManager.isInFreeMode() || gameModeManager.isGameActive) {
+      playerControls.launchBall();
+    } else {
+      console.log("Cannot throw ball - game is over. Press 'M' to change modes or restart.");
+    }
   }
 
   if (key === 'w') {
@@ -263,9 +263,9 @@ function update() {
   controls.enabled = isOrbitEnabled;
   controls.update();
 
-   // Track ball state for 2-player mode turn switching
-   const wasBallThrown = previousBallState?.throwedBall || false;
-   const isBallThrown = playerControls.moveStates.throwedBall;
+  // Track ball state for 2-player mode turn switching
+  const wasBallThrown = previousBallState?.throwedBall || false;
+  const isBallThrown = playerControls.moveStates.throwedBall;
 
   // Update player controls
   playerControls.update(deltaTime);
@@ -310,6 +310,7 @@ function update() {
   gui.updateDiagnosticsInfo(uiFramework.diagnosticsInfoContainer, camera, basketballData, playerControls, isUIVisible, isDiagnosticsEnabled, gameModeManager);
   gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled, isDiagnosticsEnabled, gameModeManager);
   gui.updateStatistics(gameModeManager);
+  gui.updatePowerBarDisplay(playerControls.pitch)
 }
 
 // Animation function

@@ -26,7 +26,7 @@ class PlayerControls {
         ////////////////////
         // AIM BALL
         ////////////////////
-        this.pitch = 0;
+        this.pitch = Math.PI / 4
         this.pitchSpeed = Math.PI / 3
         this.throwExtraForce = 25; // multiplied by (pitch / (Math.PI / 2)) - steeper angle increases force of throw
         this.throwForce = 43;
@@ -180,6 +180,7 @@ class PlayerControls {
 
     resetBall() {
         console.log('BALL RESET')
+        this.pitch = Math.PI / 4
         this.moveStates = {
             ArrowUp: false,
             ArrowLeft: false,

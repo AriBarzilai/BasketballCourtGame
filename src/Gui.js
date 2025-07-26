@@ -3,7 +3,8 @@
 const stats = {
     playerScore: 0,
     shotAttempts: 0,
-    shotsMade: 0
+    shotsMade: 0,
+    powerLevel: 50
 };
 
 export default stats;
@@ -17,7 +18,7 @@ function createScoreContainer(document) {
     const mainTitle = document.createElement('h2');
     mainTitle.id = 'main-title';
     mainTitle.className = 'main-title';
-    
+
     // Create the content area
     const horizontalContent = document.createElement('div');
     horizontalContent.id = 'horizontal-content';
@@ -64,28 +65,28 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
     // Get current mode info from GameModeManager
     const isTwoPlayerMode = gameModeManager && gameModeManager.getCurrentMode().isTwoPlayer;
     const currentMode = gameModeManager ? gameModeManager.getCurrentMode() : null;
-    
+
     if (isTwoPlayerMode && gameModeManager) {
         // TWO_PLAYER mode - show separate stats for each player
         const twoPlayerStats = gameModeManager.twoPlayerStats;
         const currentPlayer = twoPlayerStats.currentPlayer;
-        
+
         mainTitle.textContent = `${currentMode.name} - Player ${currentPlayer}'s Turn`;
         vsSection.style.display = 'block';
-        
+
         // Restore the left border for statistics section
         statisticsDisplay.style.borderLeft = '1px solid #444';
         statisticsDisplay.style.paddingLeft = '20px';
-        
+
         // Reset justify content
         horizontalContent.style.justifyContent = 'space-between';
 
         // Calculate individual player accuracies
-        const p1Accuracy = twoPlayerStats.player1.shotAttempts > 0 
-            ? Math.round((twoPlayerStats.player1.shotsMade / twoPlayerStats.player1.shotAttempts) * 100) 
+        const p1Accuracy = twoPlayerStats.player1.shotAttempts > 0
+            ? Math.round((twoPlayerStats.player1.shotsMade / twoPlayerStats.player1.shotAttempts) * 100)
             : 0;
-        const p2Accuracy = twoPlayerStats.player2.shotAttempts > 0 
-            ? Math.round((twoPlayerStats.player2.shotsMade / twoPlayerStats.player2.shotAttempts) * 100) 
+        const p2Accuracy = twoPlayerStats.player2.shotAttempts > 0
+            ? Math.round((twoPlayerStats.player2.shotsMade / twoPlayerStats.player2.shotAttempts) * 100)
             : 0;
 
         // LEFT SIDE: Player 1's individual statistics
@@ -137,16 +138,16 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
         const modeTitle = currentMode ? currentMode.name : 'Player Statistics';
         mainTitle.textContent = modeTitle;
         vsSection.style.display = 'none';
-        
+
         // Remove the left border from statistics section
         statisticsDisplay.style.borderLeft = 'none';
         statisticsDisplay.style.paddingLeft = '0';
-        
+
         // Center the statistics
         horizontalContent.style.justifyContent = 'center';
 
-        const accuracy = stats.shotAttempts > 0 
-            ? Math.round((stats.shotsMade / stats.shotAttempts) * 100) 
+        const accuracy = stats.shotAttempts > 0
+            ? Math.round((stats.shotsMade / stats.shotAttempts) * 100)
             : 0;
 
         // Show mode-specific info if available
@@ -154,7 +155,7 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
         if (gameModeManager && gameModeManager.isGameActive) {
             const modeStats = gameModeManager.modeStats;
             const mode = gameModeManager.getCurrentMode();
-            
+
             if (mode.hasTimer) {
                 modeSpecificInfo = `
                     <div class="stat-row">
@@ -219,7 +220,7 @@ function resetStatistics() {
     stats.playerScore = 0;
     stats.shotAttempts = 0;
     stats.shotsMade = 0;
-    
+
     updateStatistics();
 }
 
@@ -311,7 +312,7 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
     const isTwoPlayerMode = gameModeManager && gameModeManager.getCurrentMode().isTwoPlayer;
     const isGameActive = gameModeManager && gameModeManager.isGameActive;
     const isInFreeMode = gameModeManager && gameModeManager.isInFreeMode();
-    
+
     let playControls = `
         <div class="control-section current-controls">
             <h4>Ball Controls:</h4>
@@ -331,9 +332,9 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
 
     // Reset control - available in free mode, challenge modes, or when game is not active
     const currentMode = gameModeManager ? gameModeManager.getCurrentMode() : null;
-    const isResetAllowed = isInFreeMode || 
-                        !isGameActive ||
-                        (currentMode && (currentMode.name === 'Timed Challenge' || currentMode.name === 'Shot Limit'));
+    const isResetAllowed = isInFreeMode ||
+        !isGameActive ||
+        (currentMode && (currentMode.name === 'Timed Challenge' || currentMode.name === 'Shot Limit'));
 
     if (isResetAllowed) {
         playControls += `
@@ -352,7 +353,7 @@ function updateEnhancedControlsDisplay(controlsContainer, isOrbitEnabled, isDiag
 
 
     playControls += `</div>`;
-    
+
     controlsList.innerHTML = currentControls + gameModeControls + playControls;
 }
 
@@ -383,6 +384,49 @@ function updateDiagnosticsInfo(diagnosticsInfoContainer, camera, basketball, pla
         (isDiagnosticsEnabled && isUIVisible) ? 'block' : 'none';
 }
 
+function createPowerBarContainer(document) {
+    const container = document.createElement('div');
+    container.id = 'power-bar-container';
+    container.className = 'power-bar-container';
+
+    const title = document.createElement('div');
+    title.className = 'power-bar-title';
+    title.textContent = 'SHOT POWER';
+
+    const barBackground = document.createElement('div');
+    barBackground.className = 'power-bar-background';
+
+    const barFill = document.createElement('div');
+    barFill.id = 'power-bar-fill';
+    barFill.className = 'power-bar-fill';
+
+    const valueDisplay = document.createElement('div');
+    valueDisplay.id = 'power-bar-value';
+    valueDisplay.className = 'power-bar-value';
+    valueDisplay.textContent = `${0}%`;
+
+    barBackground.appendChild(barFill);
+    container.appendChild(title);
+    container.appendChild(barBackground);
+    container.appendChild(valueDisplay);
+
+    barFill.style.height = `${0}%`;
+    valueDisplay.textContent = `${0}%`;
+
+    return container;
+}
+
+function updatePowerBarDisplay(pitch) {
+    const power = Math.floor((pitch / (Math.PI / 2)) * 100)
+    const barFill = document.getElementById('power-bar-fill');
+    const valueDisplay = document.getElementById('power-bar-value');
+
+    if (barFill && valueDisplay) {
+        barFill.style.height = `${power}%`;
+        valueDisplay.textContent = `${power}%`;
+    }
+}
+
 // Create the complete UI framework
 function createCompleteUIFramework(document) {
     // Add CSS styles
@@ -395,16 +439,18 @@ function createCompleteUIFramework(document) {
     const scoreContainer = createScoreContainer(document);
     const controlsContainer = createEnhancedControlsContainer(document);
     const diagnosticsInfoContainer = createDiagnosticsInfoContainer(document);
+    const powerBarContainer = createPowerBarContainer(document)
 
     mainContainer.appendChild(scoreContainer);
     mainContainer.appendChild(controlsContainer);
     mainContainer.appendChild(diagnosticsInfoContainer);
-
+    mainContainer.appendChild(powerBarContainer);
     return {
         mainContainer: mainContainer,
         scoreContainer: scoreContainer,
         controlsContainer: controlsContainer,
-        diagnosticsInfoContainer: diagnosticsInfoContainer
+        diagnosticsInfoContainer: diagnosticsInfoContainer,
+        powerBarContainer: powerBarContainer
     };
 }
 
@@ -817,6 +863,57 @@ function addUIFrameworkStyles(document) {
                 overflow-y: auto;
             }
         }
+                    .power-bar-container {
+            position: fixed;
+            right: 20px;
+            bottom: 100px;
+            width: 40px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            border: 2px solid #444;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+            z-index: 1000;
+        }
+        
+        .power-bar-title {
+            font-size: 0.6em;
+            color: #ccc;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .power-bar-background {
+            width: 20px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .power-bar-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(to top, #4CAF50, #8BC34A);
+            border-radius: 10px;
+            transition: height 0.1s ease-out;
+        }
+        
+        .power-bar-value {
+            font-size: 0.7em;
+            color: white;
+            margin-top: 8px;
+            font-weight: bold;
+        }
     `;
 
     document.head.appendChild(style);
@@ -828,5 +925,6 @@ export {
     updateEnhancedControlsDisplay,
     updateDiagnosticsInfo,
     updateStatistics,
-    resetStatistics
+    resetStatistics,
+    updatePowerBarDisplay
 }
