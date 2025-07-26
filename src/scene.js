@@ -162,7 +162,7 @@ let isDiagnosticsEnabled = false;
 // Instructions display
 const uiFramework = gui.createCompleteUIFramework(document);
 document.body.appendChild(uiFramework.mainContainer);
-
+gameModeManager.showModeSelector();
 // Initialize the enhanced controls display
 gui.updateEnhancedControlsDisplay(uiFramework.controlsContainer, isOrbitEnabled);
 
