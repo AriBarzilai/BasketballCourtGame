@@ -208,19 +208,31 @@ function handleKeyDown(e) {
   }
 
   if (['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
-    playerControls.moveStates[e.key] = true;
+    // Only allow ball movement if game is active (or in free mode)
+    if (gameModeManager.isInFreeMode() || gameModeManager.isGameActive) {
+      playerControls.moveStates[e.key] = true;
+    }
   }
 
   if (key === ' ') {
+    // Only allow ball throwing if game is active (or in free mode)
+  if (gameModeManager.isInFreeMode() || gameModeManager.isGameActive) {
     playerControls.launchBall();
+  } else {
+    console.log("Cannot throw ball - game is over. Press 'M' to change modes or restart.");
+  }
   }
 
   if (key === 'w') {
-    playerControls.moveStates.increasePower = true;
-    playerControls.moveStates.decreasePower = false;
+    if (gameModeManager.isInFreeMode() || gameModeManager.isGameActive) {
+      playerControls.moveStates.increasePower = true;
+      playerControls.moveStates.decreasePower = false;
+    }
   } else if (key == 's') {
-    playerControls.moveStates.decreasePower = true;
-    playerControls.moveStates.increasePower = false;
+    if (gameModeManager.isInFreeMode() || gameModeManager.isGameActive) {
+      playerControls.moveStates.decreasePower = true;
+      playerControls.moveStates.increasePower = false;
+    }
   }
 }
 
