@@ -8,13 +8,13 @@ class FeedbackManager {
             ballPassedOverHoop: false,
             hitBackboard: false
         };
-        
+
         // Feedback display element
         this.feedbackElement = null;
-        
+
         // Initialize the feedback display
         this.createFeedbackDisplay();
-        
+
         console.log("FeedbackManager: Shot feedback system initialized");
     }
 
@@ -41,7 +41,7 @@ class FeedbackManager {
             backdrop-filter: blur(5px);
             animation: fadeIn 0.3s ease-in;
         `;
-        
+
         // Add CSS animation
         const style = document.createElement('style');
         style.textContent = `
@@ -97,16 +97,20 @@ class FeedbackManager {
     }
 
     // Show successful shot feedback
-    showSuccessfulShot() {
-        this.showFeedback("VERY GOOD! 🏀✨", "#4CAF50");
+    showSuccessfulShot(isCombo, isSwish) {
+        let str = "VERY GOOD! 🏀✨";
+        if (isCombo) { str += " COMBO" }
+        if (isSwish) { str += " SWISH" }
+        if (isCombo || isSwish) { str += "!" }
+        this.showFeedback(str, "#4CAF50");
     }
 
     // Show feedback based on shot analysis (only for cases without immediate feedback)
     analyzeShotResult() {
         if (this.shotState.hasGivenFeedback) return;
-        
+
         console.log("FeedbackManager: Analyzing shot result...", this.shotState);
-        
+
         if (this.shotState.ballPassedOverHoop) {
             this.showFeedback("TOO STRONG! 💪", "#ff6b6b");
         } else if (!this.shotState.ballReachedHoopArea) {
@@ -120,13 +124,13 @@ class FeedbackManager {
     // Generic method to show feedback with custom message and color
     showFeedback(message, color = '#ffffff') {
         if (this.shotState.hasGivenFeedback) return; // Prevent multiple feedbacks per shot
-        
+
         this.feedbackElement.innerHTML = message;
         this.feedbackElement.style.color = color;
         this.feedbackElement.style.borderColor = color;
         this.feedbackElement.style.display = 'block';
         this.feedbackElement.style.animation = 'fadeIn 0.3s ease-in';
-        
+
         // Hide feedback after 2.5 seconds with fade out animation
         setTimeout(() => {
             this.feedbackElement.style.animation = 'fadeOut 0.3s ease-out';
@@ -134,7 +138,7 @@ class FeedbackManager {
                 this.feedbackElement.style.display = 'none';
             }, 300);
         }, 2500);
-        
+
         this.shotState.hasGivenFeedback = true;
         console.log(`FeedbackManager: Displayed feedback - ${message}`);
     }
@@ -142,10 +146,10 @@ class FeedbackManager {
     // Check if ball is near hoop (call this from PlayerControls)
     checkIfNearHoop(ballPosition, hoop) {
         if (this.shotState.ballReachedHoopArea) return; // Already marked
-        
+
         const hoopPos = new THREE.Vector3();
         hoop.getObjectByName('hoop').getObjectByName('rim').getWorldPosition(hoopPos);
-        
+
         const distance = ballPosition.distanceTo(hoopPos);
         if (distance < 8) { // Within 8 units of the hoop
             this.markBallReachedHoop();
@@ -155,15 +159,15 @@ class FeedbackManager {
     // Check if ball passed over hoop (call this from PlayerControls)
     checkIfPassedOverHoop(ballPosition, hoop) {
         if (this.shotState.ballPassedOverHoop) return; // Already marked
-        
+
         const hoopPos = new THREE.Vector3();
         hoop.getObjectByName('hoop').getObjectByName('rim').getWorldPosition(hoopPos);
-        
+
         const horizontalDistance = Math.sqrt(
-            Math.pow(ballPosition.x - hoopPos.x, 2) + 
+            Math.pow(ballPosition.x - hoopPos.x, 2) +
             Math.pow(ballPosition.z - hoopPos.z, 2)
         );
-        
+
         // If ball is close horizontally but much higher than rim
         if (horizontalDistance < 3 && ballPosition.y > hoopPos.y + 5) {
             this.markBallPassedOverHoop();
@@ -173,7 +177,7 @@ class FeedbackManager {
     // Update method to call during ball flight
     updateDuringShot(ballPosition, hoop) {
         if (this.shotState.hasGivenFeedback) return;
-        
+
         this.checkIfNearHoop(ballPosition, hoop);
         this.checkIfPassedOverHoop(ballPosition, hoop);
     }

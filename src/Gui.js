@@ -3,7 +3,8 @@ const stats = {
     playerScore: 0,
     shotAttempts: 0,
     shotsMade: 0,
-    powerLevel: 50
+    powerLevel: 50,
+    combo: 0
 };
 
 export default stats;
@@ -211,6 +212,12 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
                 <div class="stat-item compact">
                     <span class="stat-label">Accuracy:</span>
                     <span class="stat-value" id="shooting-percentage">${accuracy}%</span>
+                </div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-item compact">
+                    <span class="stat-label">Combo:</span>
+                    <span class="stat-value" id="combo-value">${stats.combo}</span>
                 </div>
             </div>
         `;
@@ -465,18 +472,21 @@ function createCompleteUIFramework(document) {
     const controlsContainer = createEnhancedControlsContainer(document);
     const diagnosticsInfoContainer = createDiagnosticsInfoContainer(document);
     const creditsContainer = createCreditsContainer(document);
+    const powerBarContainer = createPowerBarContainer(document);
 
     mainContainer.appendChild(scoreContainer);
     mainContainer.appendChild(controlsContainer);
     mainContainer.appendChild(diagnosticsInfoContainer);
     mainContainer.appendChild(creditsContainer);
+    mainContainer.appendChild(powerBarContainer);
 
     return {
         mainContainer: mainContainer,
         scoreContainer: scoreContainer,
         controlsContainer: controlsContainer,
         diagnosticsInfoContainer: diagnosticsInfoContainer,
-        creditsContainer: creditsContainer
+        creditsContainer: creditsContainer,
+        powerBarContainer: powerBarContainer
     };
 }
 
