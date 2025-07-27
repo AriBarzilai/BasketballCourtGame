@@ -21,7 +21,8 @@ class PlayerControls {
             increasePower: false,
             decreasePower: false,
         }
-
+        this.has_collided = false // "swish" detection - gives bonus 1.5x multiplier if hasn't hit rim or board
+        stats.combo = 0; // adds 1.5*combo for consecutive succesfull shots
 
         ////////////////////
         // AIM BALL
@@ -195,7 +196,7 @@ class PlayerControls {
         this.updateDirArrow();
         this.basketballTrail.clearTrailGeometry();
         this.basketballTrail.stopTrail();
-
+        stats.combo = 0;
         if (this.audioManager) {
             this.audioManager.playBallBounce();
         }
@@ -205,6 +206,7 @@ class PlayerControls {
         this.dirArrow.position.copy(this.basketballData.object.position);
         this.dirArrow.visible = true;
         this.dirArrow.setDirection(this.computeAimedDirection());
+        this.has_collided = false;
     }
 
 
@@ -252,29 +254,34 @@ class PlayerControls {
                 if (horizDist < RIM_RADIUS - ballRadius) {
                     if (!this.hasScoredThisThrow && this.currVelocity.y < 0) {
                         stats.shotsMade += 1;
-                        stats.playerScore += 3;
+                        stats.playerScore += 3 + 1.5 * (stats.combo + (!this.has_collided ? 1 : 0));
                         this.hasScoredThisThrow = true;
 
-                        this.feedbackManager.showSuccessfulShot();
+                        this.feedbackManager.showSuccessfulShot((stats.combo > 0), !this.has_collided);
+                        stats.combo += 1;
                         // Play net sound
                         this.audioManager.playNetSwish();
                         // Play score sound
                         this.audioManager.playScoreSound();
-                    } else {
+                    } else if (!this.hasScoredThisThrow) {
                         if (ballPos.y <= rimCenter.y) {
                             this.feedbackManager.markPoleHit()
                         } else {
                             this.feedbackManager.showFeedback("CLOSE! Try again! 🎯", "#feca57")
                         }
+                        stats.combo = 0
                     }
+                    this.has_collided = true;
                     return;
                 } else if (overlap > 0) {
-                    const normal = new THREE.Vector3(dx, 0, dz).normalize();
+                    const normal = new THREE.Vector3(dx, ballPos.y - rimCenter.y, dz).normalize();
                     ballPos.addScaledVector(normal, overlap + 1e-3);   // positional correction
                     this.currVelocity.reflect(normal).multiplyScalar(this.RESTITUTION);
                     if (this.audioManager) {
                         this.audioManager.playBackboardHit();
                     }
+                    stats.combo = 0
+                    this.has_collided = true;
                     return;
                 }
 
