@@ -22,7 +22,8 @@
 - All demo screenshots are stored in the demo-pictures folder
 
 ## Additional Features
-- We added additional menu options:
+- **HW6** We added ALL bonus features.
+- **HW5** We added additional menu options:
     - CAMERA PRESET BONUS: We defined three preset locations for the camera, which can be cycled through by pressing C. Preset locations: Topdown view, Player View, Starting Position View
     - HIDE GUI: We added options to hide the GUI by pressing H
     - GAME DEV DIAGNOSTICS: We added extra info to help us as developers, such as displaying the current camera position and orientation onto the screen for debugging purposes. Can display by pressing backtick (`) or tilde (~)
