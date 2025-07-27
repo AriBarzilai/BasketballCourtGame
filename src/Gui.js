@@ -217,7 +217,6 @@ function updateScoreboardDisplay(container, gameModeManager = null) {
     }
 }
 
-// Simplified update function that works with existing stats
 function updateStatistics(gameModeManager = null) {
     const container = document.getElementById('score-container');
     if (container) {
@@ -465,16 +464,19 @@ function createCompleteUIFramework(document) {
     const scoreContainer = createScoreContainer(document);
     const controlsContainer = createEnhancedControlsContainer(document);
     const diagnosticsInfoContainer = createDiagnosticsInfoContainer(document);
+    const creditsContainer = createCreditsContainer(document);
 
     mainContainer.appendChild(scoreContainer);
     mainContainer.appendChild(controlsContainer);
     mainContainer.appendChild(diagnosticsInfoContainer);
+    mainContainer.appendChild(creditsContainer);
 
     return {
         mainContainer: mainContainer,
         scoreContainer: scoreContainer,
         controlsContainer: controlsContainer,
-        diagnosticsInfoContainer: diagnosticsInfoContainer
+        diagnosticsInfoContainer: diagnosticsInfoContainer,
+        creditsContainer: creditsContainer
     };
 }
 
